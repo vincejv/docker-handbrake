@@ -4,7 +4,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 # Set same default compilation flags as abuild.
-export CFLAGS="-fomit-frame-pointer"
+export CFLAGS="-O2 -pipe -march=sandybridge -mtune=sandybridge -fomit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
