@@ -205,7 +205,7 @@ xx-apk --no-cache --no-scripts add \
 
 # gtk
 xx-apk --no-cache --no-scripts add \
-    gtk4.0-dev \
+    gtk+3.0-dev \
     dbus-glib-dev \
     libnotify-dev \
     libgudev-dev \
@@ -428,7 +428,8 @@ log "Patching HandBrake..."
 if xx-info is-cross; then
     patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
 fi
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/main-window-maximized.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/av1_svt180_upgrade.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/enable-svt-av1-avx512.patch
 
 # Create the meson cross compile config file.
 if xx-info is-cross; then
