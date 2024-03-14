@@ -1,0 +1,84 @@
+From 3226138299e5d3b440b709f8880a3c5347ec8fca Mon Sep 17 00:00:00 2001
+From: hnsteyding <65712636+hnsteyding@users.noreply.github.com>
+Date: Tue, 12 Mar 2024 19:35:29 +0100
+Subject: [PATCH] Contrib: update opus to 1.5.1 (#5838)
+
+---
+ contrib/libopus/A00-static-pkg-config.patch | 38 ---------------------
+ contrib/libopus/module.defs                 | 14 ++++++--
+ 2 files changed, 11 insertions(+), 41 deletions(-)
+ delete mode 100644 contrib/libopus/A00-static-pkg-config.patch
+
+diff --git a/contrib/libopus/A00-static-pkg-config.patch b/contrib/libopus/A00-static-pkg-config.patch
+deleted file mode 100644
+index 70ef326996ea..000000000000
+--- a/contrib/libopus/A00-static-pkg-config.patch
++++ /dev/null
+@@ -1,38 +0,0 @@
+-diff -ur opus-1.2.1.orig/configure.ac opus-1.2.1/configure.ac
+---- opus-1.2.1.orig/configure.ac	2017-06-26 11:06:46.000000000 -0700
+-+++ opus-1.2.1/configure.ac	2018-06-01 17:00:15.140159087 -0700
+-@@ -812,6 +812,13 @@
+-   AC_DEFINE([ENABLE_UPDATE_DRAFT], [1], [Enable bitstream changes from draft-ietf-codec-opus-update])
+- ])
+- 
+-+AS_IF([test "$enable_shared" = "no"], [
+-+    LIBM_SHARED=""
+-+    LIBM_STATIC="$LIBM"
+-+], [
+-+    LIBM_SHARED="$LIBM"
+-+    LIBM_STATIC=""
+-+])
+- 
+- saved_CFLAGS="$CFLAGS"
+- CFLAGS="$CFLAGS -fvisibility=hidden"
+-@@ -843,6 +850,8 @@
+- AC_CHECK_FUNCS([__malloc_hook])
+- 
+- AC_SUBST([PC_BUILD])
+-+AC_SUBST([LIBM_SHARED])
+-+AC_SUBST([LIBM_STATIC])
+- 
+- AC_CONFIG_FILES([
+-     Makefile
+-diff -ur opus-1.2.1.orig/opus.pc.in opus-1.2.1/opus.pc.in
+---- opus-1.2.1.orig/opus.pc.in	2017-06-15 15:24:07.000000000 -0700
+-+++ opus-1.2.1/opus.pc.in	2018-06-01 17:00:26.500350502 -0700
+-@@ -11,6 +11,6 @@
+- Version: @VERSION@
+- Requires:
+- Conflicts:
+--Libs: -L${libdir} -lopus
+--Libs.private: @LIBM@
+-+Libs: -L${libdir} -lopus @LIBM_STATIC@
+-+Libs.private: @LIBM_SHARED@
+- Cflags: -I${includedir}/opus
+diff --git a/contrib/libopus/module.defs b/contrib/libopus/module.defs
+index 6475f0ad259d..8d0859eab81f 100644
+--- a/contrib/libopus/module.defs
++++ b/contrib/libopus/module.defs
+@@ -1,9 +1,9 @@
+ $(eval $(call import.MODULE.defs,LIBOPUS,libopus))
+ $(eval $(call import.CONTRIB.defs,LIBOPUS))
+ 
+-LIBOPUS.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/opus-1.4.tar.gz
+-LIBOPUS.FETCH.url    += https://github.com/xiph/opus/releases/download/v1.4/opus-1.4.tar.gz
+-LIBOPUS.FETCH.sha256  = c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f
++LIBOPUS.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/opus-1.5.1.tar.gz
++LIBOPUS.FETCH.url    += https://downloads.xiph.org/releases/opus/opus-1.5.1.tar.gz
++LIBOPUS.FETCH.sha256  = b84610959b8d417b611aa12a22565e0a3732097c6389d19098d844543e340f85
+ 
+ LIBOPUS.CONFIGURE.shared = --enable-shared=no
+ LIBOPUS.CONFIGURE.extra = --disable-doc --disable-extra-programs
+@@ -13,3 +13,11 @@ LIBOPUS.CONFIGURE.extra = --disable-doc --disable-extra-programs
+ LIBOPUS.GCC.args.extra += -DOPUS_WILL_BE_SLOW
+ 
+ LIBOPUS.CONFIGURE.bootstrap = rm -fr aclocal.m4 autom4te.cache configure; autoreconf -fiv;
++
++# Disable Run-time CPU detection on Windows ARM architecture
++# because libopus could not detect CPU machine type properly
++ifeq (mingw,$(HOST.system))
++	ifeq (aarch64,$(HOST.machine))
++		LIBOPUS.CONFIGURE.extra += --disable-rtcd
++	endif
++endif
