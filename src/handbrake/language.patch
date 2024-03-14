@@ -1,0 +1,21 @@
+diff --git a/libhb/lang.c b/libhb/lang.c
+index 0039a8aef..a26ba847a 100644
+--- a/libhb/lang.c
++++ b/libhb/lang.c
+@@ -63,6 +63,7 @@ static const iso639_lang_t languages[] =
+   { "Ewe", "eʋegbe", "ee", "ewe" },
+   { "Faroese", "føroyskt", "fo", "fao" },
+   { "Fijian", "Na Vosa Vakaviti", "fj", "fij" },
++  { "Filipino", "Pilipino", "fl", "fil" },
+   { "Finnish", "suomi", "fi", "fin" },
+   { "French", "Francais", "fr", "fra", "fre" },
+   { "Western Frisian", "Frysk", "fy", "fry" },
+@@ -122,7 +123,7 @@ static const iso639_lang_t languages[] =
+   { "Malayalam", "മലയാളം", "ml", "mal" },
+   { "Maori", "Reo Māori", "mi", "mri", "mao" },
+   { "Marathi", "मराठी", "mr", "mar" },
+-  { "Malay", "Bahasa Melayu", "ms", "msa", "msa" },
++  { "Malay", "Bahasa Melayu", "ms", "msa", "may" },
+   { "Malagasy", "Malagasy", "mg", "mlg" },
+   { "Maltese", "Malti", "mt", "mlt" },
+   { "Moldavian", "limba moldovenească", "mo", "mol" },
