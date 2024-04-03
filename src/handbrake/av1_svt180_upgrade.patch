@@ -12176,19 +12176,18 @@ index fb4092878..000000000
 -2.39.3 (Apple Git-145)
 -
 diff --git a/contrib/svt-av1/module.defs b/contrib/svt-av1/module.defs
-index 2a16c6825..f1f101d4a 100644
+index 2a16c6825..b63c09f81 100644
 --- a/contrib/svt-av1/module.defs
 +++ b/contrib/svt-av1/module.defs
-@@ -3,9 +3,9 @@ __deps__ := SSE2NEON
+@@ -3,9 +3,8 @@ __deps__ := SSE2NEON
  $(eval $(call import.MODULE.defs,SVT-AV1,svt-av1,$(__deps__)))
  $(eval $(call import.CONTRIB.defs,SVT-AV1))
  
 -SVT-AV1.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.url    += https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v1.7.0/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.sha256  = ce0973584f1a187aa4abf63f509ff8464397120878e322a3153f87e9c161fc4f
-+SVT-AV1.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/SVT-AV1-v2.0.0.tar.gz
-+SVT-AV1.FETCH.url    += https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v2.0.0/SVT-AV1-v2.0.0.tar.gz
-+SVT-AV1.FETCH.sha256  = 1ff917e2c866bd35dc9c35fd416575a4fbb0a2605878465e1a0e838dbd882082
++SVT-AV1.FETCH.url     = https://github.com/gianni-rosato/svt-av1-psy/archive/refs/tags/v2.0.0.tar.gz
++SVT-AV1.FETCH.sha256  = c1b303c3cde0833b1e0094aa51d75537eeead3e98fcaff1c301f913f864d5d6a
  
  SVT-AV1.build_dir             = build
  SVT-AV1.CONFIGURE.exe         = cmake
