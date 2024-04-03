@@ -12176,7 +12176,7 @@ index fb4092878..000000000
 -2.39.3 (Apple Git-145)
 -
 diff --git a/contrib/svt-av1/module.defs b/contrib/svt-av1/module.defs
-index 2a16c6825..b63c09f81 100644
+index 2a16c6825..80d10a2f5 100644
 --- a/contrib/svt-av1/module.defs
 +++ b/contrib/svt-av1/module.defs
 @@ -3,9 +3,8 @@ __deps__ := SSE2NEON
@@ -12186,7 +12186,7 @@ index 2a16c6825..b63c09f81 100644
 -SVT-AV1.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.url    += https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v1.7.0/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.sha256  = ce0973584f1a187aa4abf63f509ff8464397120878e322a3153f87e9c161fc4f
-+SVT-AV1.FETCH.url     = https://github.com/gianni-rosato/svt-av1-psy/archive/refs/tags/v2.0.0.tar.gz
++SVT-AV1.FETCH.url     = https://codeload.github.com/gianni-rosato/svt-av1-psy/tar.gz/v2.0.0?
 +SVT-AV1.FETCH.sha256  = c1b303c3cde0833b1e0094aa51d75537eeead3e98fcaff1c301f913f864d5d6a
  
  SVT-AV1.build_dir             = build
