@@ -12186,8 +12186,8 @@ index 2a16c6825..80d10a2f5 100644
 -SVT-AV1.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.url    += https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v1.7.0/SVT-AV1-v1.7.0.tar.gz
 -SVT-AV1.FETCH.sha256  = ce0973584f1a187aa4abf63f509ff8464397120878e322a3153f87e9c161fc4f
-+SVT-AV1.FETCH.url     = https://github.com/vincejv/docker-handbrake/releases/download/contribs/svt-av1-psy-2.0.0-c76ddcf.tar.gz
-+SVT-AV1.FETCH.sha256  = d35687830af71528e64d3bf5ef84cbac66756859f5da18bf615244ec91f37c45
++SVT-AV1.FETCH.url     = https://github.com/vincejv/docker-handbrake/releases/download/contribs/svt-av1-psy-2.0.0-2df0e62.tar.gz
++SVT-AV1.FETCH.sha256  = 5bb46f8b41e724af8155814b60c0b2f61e8b5ab4584b95de3d5f3ec99ecc42dc
  
  SVT-AV1.build_dir             = build
  SVT-AV1.CONFIGURE.exe         = cmake
