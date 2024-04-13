@@ -148,8 +148,8 @@ apk --no-cache add \
     curl \
     binutils \
     git \
-    clang15 \
-    llvm15 \
+    clang17 \
+    llvm17 \
     make \
     cmake \
     pkgconf \
