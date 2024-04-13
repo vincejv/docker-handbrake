@@ -34,7 +34,7 @@ ARG HANDBRAKE_DEBUG_MODE=none
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 
 # Build HandBrake.
-FROM --platform=$BUILDPLATFORM alpine:3.19 AS handbrake
+FROM --platform=$BUILDPLATFORM ubuntu:jammy AS handbrake
 ARG TARGETPLATFORM
 ARG HANDBRAKE_VERSION
 ARG HANDBRAKE_URL
@@ -62,7 +62,7 @@ RUN xx-verify \
     /tmp/handbrake-install/usr/bin/HandBrakeCLI
 
 # Build cpu_features.
-FROM --platform=$BUILDPLATFORM alpine:3.19 AS cpu_features
+FROM --platform=$BUILDPLATFORM ubuntu:jammy AS cpu_features
 ARG TARGETPLATFORM
 ARG CPU_FEATURES_URL
 COPY --from=xx / /
@@ -71,7 +71,7 @@ RUN /build/build.sh "$CPU_FEATURES_URL"
 RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.19-v4.5.3
+FROM jlesage/baseimage-gui:ubuntu-22.04-v4
 
 ARG HANDBRAKE_VERSION
 ARG DOCKER_IMAGE_VERSION
@@ -79,39 +79,36 @@ ARG DOCKER_IMAGE_VERSION
 # Define working directory.
 WORKDIR /tmp
 
-# Use glibc instead of musl
-RUN install-glibc
-
 # Install dependencies.
 RUN \
     add-pkg \
-        libstdc++ \
-        gtk+3.0 \
-        libgudev \
-        dbus-glib \
-        libnotify \
-        libsamplerate \
-        libass \
-        libdrm \
-        jansson \
-        xz \
-        numactl \
+        libgtk-3-0 \
+        libgudev-1.0-0 \
+        libdbus-glib-1-dev \
+        libnotify-dev \
+        libsamplerate0 \
+        libass9 \
+        libjansson4 \
+        liblzma5 \
+        libbz2-1.0 \
+        libnuma1 \
+        libgstreamer1.0-0 \
+        libgstreamer-plugins-base1.0-0 \
+        dbus-x11 \
         # Media codecs:
-        libtheora \
-        lame \
-        opus \
-        libvorbis \
-        speex \
-        libvpx \
-        x264-libs \
-        # For QSV detection
-        pciutils \
-        # To read encrypted DVDs
-        libdvdcss \
+        libtheora0 \
+        libmp3lame0 \
+        libopus0 \
+        libvorbis0a \
+        libvorbisenc2 \
+        libspeex1 \
+        libturbojpeg \
+        libvpx7 \
+        libx264-163 \
         # A font is needed.
-        font-cantarell \
+        fonts-cantarell \
         # For main, big icons:
-        librsvg \
+        librsvg2-dev \
         # For all other small icons:
         adwaita-icon-theme \
         # For optical drive listing:

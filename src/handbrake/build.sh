@@ -77,7 +77,7 @@ export CXX=xx-clang++
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-function log {
+log() {
     echo ">>> $*"
 }
 
@@ -144,71 +144,86 @@ fi
 #
 # Install required packages.
 #
-apk --no-cache add \
+apt-get update && \
+apt-get install -y \
     curl \
     binutils \
     git \
-    clang17 \
-    llvm17 \
     make \
     cmake \
-    pkgconf \
+    pkg-config \
     autoconf \
     automake \
-    libtool \
     yasm \
     m4 \
     patch \
     coreutils \
     tar \
+    liblzma-dev \
+    libbz2-dev \
     file \
-    pythonispython3 \
+    python-is-python3 \
     intltool \
     diffutils \
     bash \
     nasm \
     meson \
     cargo \
-    cargo-c \
-    gettext-dev \
-    glib-dev \
+    gettext \
+    libglib2.0-dev \
 
-xx-apk --no-cache --no-scripts add \
-    musl-dev \
-    gcc \
-    g++ \
-    linux-headers \
+xx-apt-get install -y \
+    clang \
+    xx-c-essentials \
+    xx-cxx-essentials \
+    build-essential \
+    ninja-build \
+    patch \
+    libssl-dev \
 
 # misc libraries
-xx-apk --no-cache --no-scripts add \
-    jansson-dev \
+xx-apt-get install -y \
+    libtool \
+    libtool-bin \
+    libjansson-dev \
     libxml2-dev \
-    libpciaccess-dev \
-    xz-dev \
-    numactl-dev \
-    libjpeg-turbo-dev \
+    libnuma-dev \
+    libturbojpeg0-dev \
 
 # media libraries
-xx-apk --no-cache --no-scripts add \
-    libsamplerate-dev \
+xx-apt-get install -y \
+    libsamplerate0-dev \
     libass-dev \
 
 # media codecs
-xx-apk --no-cache --no-scripts add \
-    x264-dev \
+xx-apt-get install -y \
+    libx264-dev \
+    libogg-dev \
     libtheora-dev \
-    lame-dev \
-    opus-dev \
+    libmp3lame-dev \
+    libopus-dev \
     libvorbis-dev \
-    speex-dev \
+    libspeex-dev \
     libvpx-dev \
 
 # gtk
-xx-apk --no-cache --no-scripts add \
-    gtk+3.0-dev \
-    dbus-glib-dev \
+xx-apt-get install -y \
+    libgtk-3-dev \
+    libdbus-glib-1-dev \
     libnotify-dev \
-    libgudev-dev \
+    libgudev-1.0-dev \
+    libfontconfig-dev \
+    libfreetype-dev \
+    libfribidi-dev \
+    libharfbuzz-dev \
+    gstreamer1.0-libav \
+    gstreamer1.0-plugins-good \
+    libgstreamer-plugins-base1.0-dev \
+    appstream \
+    desktop-file-utils \
+
+# install cargo-c
+cargo install -j$(nproc) cargo-c
 
 #
 # Download sources.
@@ -477,19 +492,19 @@ log "Installing HandBrake..."
 make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
-# # Remove uneeded installed files.
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     rm -r \
-#         /tmp/handbrake-install/usr/include \
-#         /tmp/handbrake-install/usr/lib/*.la \
-#         /tmp/handbrake-install/usr/lib/libmfx.* \
-#         /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
-#         /tmp/handbrake-install/usr/lib/dri/*.la \
-#         /tmp/handbrake-install/usr/lib/pkgconfig \
-#         /tmp/handbrake-install/usr/share/metainfo \
-#         /tmp/handbrake-install/usr/share/applications \
+# Remove uneeded installed files.
+if [ "$(xx-info arch)" = "amd64" ]; then
+    rm -rf \
+        /tmp/handbrake-install/usr/include \
+        /tmp/handbrake-install/usr/lib/*.la \
+        /tmp/handbrake-install/usr/lib/libmfx.* \
+        /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
+        /tmp/handbrake-install/usr/lib/dri/*.la \
+        /tmp/handbrake-install/usr/lib/pkgconfig \
+        /tmp/handbrake-install/usr/share/metainfo \
+        /tmp/handbrake-install/usr/share/applications \
 
-# fi
+fi
 
 log "Handbrake install content:"
 find /tmp/handbrake-install

@@ -14,7 +14,7 @@ export CXX=xx-clang++
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-function log {
+log() {
     echo ">>> $*"
 }
 
@@ -28,38 +28,17 @@ fi
 #
 # Install required packages.
 #
-apk --no-cache add \
+apt-get update && \
+apt-get install -y \
     curl \
-    clang17 \
     make \
     cmake \
 
-#    binutils \
-#    git \
-#    llvm15 \
-#    pkgconf \
-#    autoconf \
-#    automake \
-#    libtool \
-#    yasm \
-#    m4 \
-#    patch \
-#    coreutils \
-#    tar \
-#    file \
-#    pythonispython3 \
-#    intltool \
-#    diffutils \
-#    bash \
-#    nasm \
-#    meson \
-#    cargo \
-#    cargo-c \
-#    gettext-dev \
-#    glib-dev \
-
-xx-apk --no-cache --no-scripts add \
-    musl-dev \
+xx-apt-get install -y \
+    clang \
+    xx-c-essentials \
+    xx-cxx-essentials \
+    libc6-dev \
     gcc \
 
 #    g++ \
@@ -68,11 +47,6 @@ xx-apk --no-cache --no-scripts add \
 #
 # Download sources.
 #
-
-#log "Downloading x264 sources..."
-#mkdir /tmp/x264
-#curl -# -L -f ${X264_URL} | tar xz --strip 1 -C /tmp/x264
-
 log "Downloading cpu_features sources..."
 mkdir /tmp/cpu_features
 curl -# -L -f ${CPU_FEATURES_URL} | tar xz --strip 1 -C /tmp/cpu_features
