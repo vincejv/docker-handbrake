@@ -34,7 +34,7 @@ ARG HANDBRAKE_DEBUG_MODE=none
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 
 # Build HandBrake.
-FROM --platform=$BUILDPLATFORM alpine:3.17 AS handbrake
+FROM --platform=$BUILDPLATFORM alpine:3.19 AS handbrake
 ARG TARGETPLATFORM
 ARG HANDBRAKE_VERSION
 ARG HANDBRAKE_URL
@@ -62,7 +62,7 @@ RUN xx-verify \
     /tmp/handbrake-install/usr/bin/HandBrakeCLI
 
 # Build cpu_features.
-FROM --platform=$BUILDPLATFORM alpine:3.17 AS cpu_features
+FROM --platform=$BUILDPLATFORM alpine:3.19 AS cpu_features
 ARG TARGETPLATFORM
 ARG CPU_FEATURES_URL
 COPY --from=xx / /
@@ -71,7 +71,7 @@ RUN /build/build.sh "$CPU_FEATURES_URL"
 RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.17-v4.5.3
+FROM jlesage/baseimage-gui:alpine-3.19-v4.5.3
 
 ARG HANDBRAKE_VERSION
 ARG DOCKER_IMAGE_VERSION
