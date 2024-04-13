@@ -477,19 +477,19 @@ log "Installing HandBrake..."
 make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
-# Remove uneeded installed files.
-if [ "$(xx-info arch)" = "amd64" ]; then
-    rm -r \
-        /tmp/handbrake-install/usr/include \
-        /tmp/handbrake-install/usr/lib/*.la \
-        /tmp/handbrake-install/usr/lib/libmfx.* \
-        /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
-        /tmp/handbrake-install/usr/lib/dri/*.la \
-        /tmp/handbrake-install/usr/lib/pkgconfig \
-        /tmp/handbrake-install/usr/share/metainfo \
-        /tmp/handbrake-install/usr/share/applications \
+# # Remove uneeded installed files.
+# if [ "$(xx-info arch)" = "amd64" ]; then
+#     rm -r \
+#         /tmp/handbrake-install/usr/include \
+#         /tmp/handbrake-install/usr/lib/*.la \
+#         /tmp/handbrake-install/usr/lib/libmfx.* \
+#         /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
+#         /tmp/handbrake-install/usr/lib/dri/*.la \
+#         /tmp/handbrake-install/usr/lib/pkgconfig \
+#         /tmp/handbrake-install/usr/share/metainfo \
+#         /tmp/handbrake-install/usr/share/applications \
 
-fi
+# fi
 
 log "Handbrake install content:"
 find /tmp/handbrake-install
