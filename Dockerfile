@@ -104,8 +104,6 @@ RUN \
         speex \
         libvpx \
         x264-libs \
-        # For QSV detection
-        pciutils \
         # To read encrypted DVDs
         libdvdcss \
         # A font is needed.
