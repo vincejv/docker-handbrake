@@ -198,7 +198,6 @@ xx-apk --no-cache --no-scripts add \
     x264-dev \
     libtheora-dev \
     lame-dev \
-    opus-dev \
     libvorbis-dev \
     speex-dev \
     libvpx-dev \
