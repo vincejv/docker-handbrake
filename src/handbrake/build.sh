@@ -283,8 +283,6 @@ fi
 log "Configuring opus..."
 (
    cd /tmp/opus && CFLAGS="${CFLAGS/-O2/}" ./configure \
-       --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-       --host=$(xx-clang --print-target-triple) \
        --prefix=/usr \
        --enable-shared \
        --disable-static \
