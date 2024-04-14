@@ -94,6 +94,8 @@ RUN \
         xz \
         numactl \
         # Media codecs:
+        libturbojpeg \
+        lame-libs \
         libtheora \
         lame \
         opus \
