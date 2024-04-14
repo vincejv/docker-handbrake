@@ -1,0 +1,55 @@
+name: Build and push to Docker Hub
+
+on:
+  push:
+    branches: [ "windows" ]
+  pull_request:
+    branches: [ "windows" ]
+
+env:
+  HANDBRAKE_VERSION: 1.7.3
+  HANDBRAKE_DEBUG_MODE: none
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cargo-C Toolchain Cache
+        id: windows-cargo-c-toolchain
+        uses: actions/cache@v3
+        with:
+          path: |
+            /root/.cargo/bin/cargo-capi
+            /root/.cargo/bin/cargo-cbuild
+            /root/.cargo/bin/cargo-cinstall
+          key: windows-cargo-c-toolchain
+      - name: Build handbrake
+        run: |
+          sudo src/handbrake/build.sh \
+            ${{ env.HANDBRAKE_VERSION }}\
+            https://github.com/HandBrake/HandBrake/releases/download/${{ env.HANDBRAKE_VERSION }}/HandBrake-${{ env.HANDBRAKE_VERSION }}-source.tar.bz2 \
+            ${{ env.HANDBRAKE_DEBUG_MODE }}
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: win64-binaries
+          path: /tmp/handbrake/build/*
+          if-no-files-found: error
+          retention-days: 90
+      - name: Get coomit hash
+        id: commit
+        uses: prompt/actions-commit-hash@v3
+      - name: Github release
+        uses: ncipollo/release-action@v1
+        with:
+          name: Release ${{ steps.commit.outputs.short }}
+          artifacts: "/tmp/handbrake/build/*"
