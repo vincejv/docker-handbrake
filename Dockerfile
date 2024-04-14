@@ -79,9 +79,6 @@ ARG DOCKER_IMAGE_VERSION
 # Define working directory.
 WORKDIR /tmp
 
-# Use glibc instead of musl
-RUN install-glibc
-
 # Install dependencies.
 RUN \
     add-pkg \
