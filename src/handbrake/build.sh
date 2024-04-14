@@ -201,7 +201,6 @@ xx-apt-get install -y \
     libogg-dev \
     libtheora-dev \
     libmp3lame-dev \
-    libopus-dev \
     libvorbis-dev \
     libspeex-dev \
     libvpx-dev \
@@ -254,6 +253,10 @@ cargo install -j$(nproc) cargo-c
 #     curl -# -L -f ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C /tmp/oneVPL-intel-gpu
 # fi
 
+log "Downloading opus sources..."
+mkdir /tmp/opus
+curl -# -L -f https://downloads.xiph.org/releases/opus/opus-1.5.2.tar.gz | tar xz --strip 1 -C /tmp/opus
+
 log "Downloading HandBrake sources..."
 if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then
     # Sources from git for nightly builds.
@@ -276,6 +279,26 @@ else
     # Do not strip symbols.
     LDFLAGS=
 fi
+
+log "Configuring opus..."
+(
+   cd /tmp/opus && CFLAGS="${CFLAGS/-O2/}" ./configure \
+       --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
+       --host=$(xx-clang --print-target-triple) \
+       --prefix=/usr \
+       --enable-shared \
+       --disable-static \
+       --enable-pic \
+       --disable-cli \
+       --extra-cflags=-fno-aggressive-loop-optimizations \
+       --enable-strip \
+)
+
+log "Compiling opus..."
+make -C /tmp/opus -j$(nproc)
+
+log "Installing opus..."
+make -C /tmp/opus install
 
 #log "Configuring x264..."
 #if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
