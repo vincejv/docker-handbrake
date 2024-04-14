@@ -216,11 +216,6 @@ xx-apt-get install -y \
     libfreetype-dev \
     libfribidi-dev \
     libharfbuzz-dev \
-    gstreamer1.0-libav \
-    gstreamer1.0-plugins-good \
-    libgstreamer-plugins-base1.0-dev \
-    appstream \
-    desktop-file-utils \
 
 # install cargo-c
 cargo install -j$(nproc) cargo-c

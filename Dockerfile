@@ -92,9 +92,6 @@ RUN \
         liblzma5 \
         libbz2-1.0 \
         libnuma1 \
-        libgstreamer1.0-0 \
-        libgstreamer-plugins-base1.0-0 \
-        dbus-x11 \
         # Media codecs:
         libtheora0 \
         libmp3lame0 \
