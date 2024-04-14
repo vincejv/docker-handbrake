@@ -282,7 +282,7 @@ fi
 
 log "Configuring opus..."
 (
-   cd /tmp/opus && CFLAGS="${CFLAGS/-O2/}" ./configure \
+   cd /tmp/opus && ./configure \
        --prefix=/usr \
        --enable-shared \
        --disable-static \
