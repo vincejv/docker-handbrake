@@ -98,6 +98,7 @@ RUN \
         lame-libs \
         libtheora \
         lame \
+        opus \
         libvorbis \
         speex \
         libvpx \
