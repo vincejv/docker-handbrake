@@ -173,6 +173,7 @@ apt-get install -y \
     meson \
     gettext \
     libglib2.0-dev \
+    xz-utils \
 
 xx-apt-get install -y \
     xx-c-essentials \
@@ -219,7 +220,7 @@ xx-apt-get install -y \
 
 # download install clang and llvm
 mkdir /tmp/clang
-curl -# -L -f https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/clang+llvm-17.0.6-x86_64-linux-gnu-ubuntu-22.04.tar.xz | tar xf --strip 1 -C /tmp/clang
+curl -# -L -f https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/clang+llvm-17.0.6-x86_64-linux-gnu-ubuntu-22.04.tar.xz | tar xJ --strip 1 -C /tmp/clang
 export PATH="/tmp/clang/bin:${PATH}"
 
 # install rust, rustup, cargo-c
