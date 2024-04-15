@@ -293,6 +293,13 @@ else
     LDFLAGS=
 fi
 
+#
+# Set compiler optimization on build
+#
+export CFLAGS="-O3 -pipe -march=$MARCH -mtune=$MARCH -fomit-frame-pointer"
+export CXXFLAGS="$CFLAGS"
+export CPPFLAGS="$CFLAGS"
+
 log "Configuring opus..."
 cd /tmp/opus && ./configure --verbose
 
@@ -485,13 +492,6 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/language.patch
 # endian = 'little'
 # EOF
 # fi
-
-#
-# Set compiler optimization on HB build
-#
-export CFLAGS="-O3 -pipe -march=${MARCH} -mtune=${MARCH} -fomit-frame-pointer"
-export CXXFLAGS="$CFLAGS"
-export CPPFLAGS="$CFLAGS"
 
 log "Configuring HandBrake..."
 (
