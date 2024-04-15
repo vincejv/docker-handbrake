@@ -152,6 +152,8 @@ apt-get install -y \
     curl \
     wget \
     lsb-release \
+    software-properties-common \
+    gnupg \
     binutils \
     git \
     make \
