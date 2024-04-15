@@ -83,8 +83,10 @@ MARCH="${4:-}"
 # INTEL_MEDIA_SDK_URL="${8:-}"
 # INTEL_ONEVPL_GPU_RUNTIME_URL="${9:-}"
 
-# Set same default compilation flags as abuild.
-export CFLAGS="-O3 -pipe -march=${MARCH} -mtune=${MARCH} -fomit-frame-pointer"
+#
+# Compiler optimizations for toolchain build
+#
+export CFLAGS="-O3 -pipe -fomit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
@@ -169,7 +171,6 @@ apt-get install -y \
     bash \
     nasm \
     meson \
-    cargo \
     gettext \
     libglib2.0-dev \
 
@@ -217,7 +218,10 @@ xx-apt-get install -y \
     libfribidi-dev \
     libharfbuzz-dev \
 
-# install cargo-c
+# install rust, rustup, cargo-c
+log "Installing rust"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+export PATH="/root/.cargo/bin:${PATH}"
 cargo install -j$(nproc) cargo-c
 
 #
@@ -268,6 +272,13 @@ else
     mkdir /tmp/handbrake
     curl -# -L -f ${HANDBRAKE_URL} | tar xj --strip 1 -C /tmp/handbrake
 fi
+
+#
+# Set compiler optimization on build
+#
+export CFLAGS="$CFLAGS -march=${MARCH} -mtune=${MARCH}"
+export CXXFLAGS="$CFLAGS"
+export CPPFLAGS="$CFLAGS"
 
 #
 # Compile HandBrake.
