@@ -91,8 +91,8 @@ export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
 
-export CC=clang
-export CXX=clang++
+export CC=clang-18
+export CXX=clang++-18
 
 if [ -z "$HANDBRAKE_VERSION" ]; then
     log "ERROR: HandBrake version missing."
