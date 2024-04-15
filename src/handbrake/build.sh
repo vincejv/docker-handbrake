@@ -274,6 +274,9 @@ log "Configuring HandBrake..."
 log "Compiling HandBrake..."
 make -C /tmp/handbrake/build -j$(nproc)
 
+log "Fix permissions..."
+chown -R runner /tmp/handbrake/build
+
 # log "Installing HandBrake..."
 # make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
