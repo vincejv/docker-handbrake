@@ -20,6 +20,23 @@ jobs:
       matrix:
         platform:
           - linux/amd64
+        march:
+          - sandybridge
+          - ivybridge
+          - haswell
+          - broadwell
+          - alderlake
+          - raptorlake
+          - rocketlake
+          - skylake
+          - x86-64-v2
+          - x86-64-v3
+          - x86-64-v4
+          - x86-64
+          - znver1
+          - znver2
+          - znver3
+          - znver4
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,35 +52,49 @@ jobs:
       - name: Build handbrake
         run: |
           sudo src/handbrake/build.sh \
-            ${{ env.HANDBRAKE_VERSION }}\
+            ${{ env.HANDBRAKE_VERSION }} \
             https://github.com/HandBrake/HandBrake/releases/download/${{ env.HANDBRAKE_VERSION }}/HandBrake-${{ env.HANDBRAKE_VERSION }}-source.tar.bz2 \
-            ${{ env.HANDBRAKE_DEBUG_MODE }}
+            ${{ env.HANDBRAKE_DEBUG_MODE }} \
+            ${{ matrix.march }}
       - name: Upload as dll artifact
         uses: actions/upload-artifact@v3
         with:
-          name: win64-hb-dll
+          name: win64-hb-dll-${{ matrix.march }}
           path: /tmp/handbrake/build/libhb/hb.dll
           if-no-files-found: error
           retention-days: 90
       - name: Upload as exe artifact
         uses: actions/upload-artifact@v3
         with:
-          name: win64-hb-cli
+          name: win64-hb-cli-${{ matrix.march }}
           path: /tmp/handbrake/build/HandBrakeCLI.exe
           if-no-files-found: error
           retention-days: 90
-      - name: Get commit hash
-        id: commit
-        uses: prompt/actions-commit-hash@v3
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Github release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.commit.outputs.short }}
-          body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: "/tmp/handbrake/build/libhb/*.dll,/tmp/handbrake/build/HandBrakeCLI.exe"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /tmp/handbrake/build/libhb/hb.dll
+          asset_name: hb-${{ matrix.march }}.dll
+          tag: ${{ github.ref }}
+
+  # merge:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build
+  #   steps:
+  #     - name: Get commit hash
+  #       id: commit
+  #       uses: prompt/actions-commit-hash@v3
+  #     - name: Bump version and push tag
+  #       id: tag_version
+  #       uses: mathieudutour/github-tag-action@v6.2
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Github release
+  #       uses: ncipollo/release-action@v1
+  #       with:
+  #         tag: ${{ steps.tag_version.outputs.new_tag }}
+  #         name: Release ${{ steps.commit.outputs.short }}
+  #         body: ${{ steps.tag_version.outputs.changelog }}
+  #         artifacts: "/tmp/handbrake/build/libhb/*.dll,/tmp/handbrake/build/HandBrakeCLI.exe"

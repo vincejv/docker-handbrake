@@ -84,6 +84,7 @@ log() {
 HANDBRAKE_VERSION="${1:-}"
 HANDBRAKE_URL="${2:-}"
 HANDBRAKE_DEBUG_MODE="${3:-}"
+MARCH="${4:-}"
 
 if [ -z "$HANDBRAKE_VERSION" ]; then
     log "ERROR: HandBrake version missing."
@@ -248,6 +249,11 @@ else
     echo "Toolchain Verification FAILED. Exiting!"
     return -1
 fi
+
+# Set compiler optimizations
+export CFLAGS="$CFLAGS -march=$MARCH"
+export CXXFLAGS="$CFLAGS"
+export CPPFLAGS="$CFLAGS"
 
 export PATH="/tmp/toolchains/mingw-w64-x86_64/bin:${PATH}"
 
