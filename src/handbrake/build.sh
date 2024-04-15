@@ -175,7 +175,6 @@ apt-get install -y \
     libglib2.0-dev \
 
 xx-apt-get install -y \
-    clang \
     xx-c-essentials \
     xx-cxx-essentials \
     build-essential \
@@ -217,6 +216,10 @@ xx-apt-get install -y \
     libfreetype-dev \
     libfribidi-dev \
     libharfbuzz-dev \
+
+# download install clang and llvm
+curl -# -L -f https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/clang+llvm-17.0.6-x86_64-linux-gnu-ubuntu-22.04.tar.xz | tar xf --strip 1 -C /tmp/clang
+export PATH="/tmp/clang/bin:${PATH}"
 
 # install rust, rustup, cargo-c
 log "Installing rust"
