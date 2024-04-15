@@ -175,7 +175,7 @@ apt-get install -y \
     libglib2.0-dev \
 
 xx-apt-get install -y \
-    clang \
+    clang-15 \
     xx-c-essentials \
     xx-cxx-essentials \
     build-essential \
