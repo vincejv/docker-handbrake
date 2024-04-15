@@ -150,6 +150,7 @@ fi
 apt-get update && \
 apt-get install -y \
     curl \
+    wget \
     binutils \
     git \
     make \
