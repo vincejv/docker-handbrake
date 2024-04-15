@@ -296,7 +296,7 @@ fi
 #
 # Set compiler optimization on build
 #
-export CFLAGS="-O3 -pipe -march=$MARCH -fomit-frame-pointer"
+export CFLAGS="$CFLAGS -march=$MARCH"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
