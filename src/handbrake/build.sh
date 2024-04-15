@@ -66,15 +66,6 @@
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
-# Set same default compilation flags as abuild.
-export CFLAGS="-O3 -pipe -march=sandybridge -mtune=sandybridge -fomit-frame-pointer"
-export CXXFLAGS="$CFLAGS"
-export CPPFLAGS="$CFLAGS"
-export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
-
-export CC=xx-clang
-export CXX=xx-clang++
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log() {
@@ -84,12 +75,22 @@ log() {
 HANDBRAKE_VERSION="${1:-}"
 HANDBRAKE_URL="${2:-}"
 HANDBRAKE_DEBUG_MODE="${3:-}"
+MARCH="${4:-}"
 # LIBVA_URL="${4:-}"
 # INTEL_VAAPI_DRIVER_URL="${5:-}"
 # GMMLIB_URL="${6:-}"
 # INTEL_MEDIA_DRIVER_URL="${7:-}"
 # INTEL_MEDIA_SDK_URL="${8:-}"
 # INTEL_ONEVPL_GPU_RUNTIME_URL="${9:-}"
+
+# Set same default compilation flags as abuild.
+export CFLAGS="-O3 -pipe -march=${MARCH} -mtune=${MARCH} -fomit-frame-pointer"
+export CXXFLAGS="$CFLAGS"
+export CPPFLAGS="$CFLAGS"
+export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
+
+export CC=xx-clang
+export CXX=xx-clang++
 
 if [ -z "$HANDBRAKE_VERSION" ]; then
     log "ERROR: HandBrake version missing."
