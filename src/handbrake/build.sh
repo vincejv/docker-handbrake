@@ -151,6 +151,7 @@ apt-get update && \
 apt-get install -y \
     curl \
     wget \
+    lsb-release \
     binutils \
     git \
     make \
