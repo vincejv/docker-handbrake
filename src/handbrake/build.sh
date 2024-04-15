@@ -293,7 +293,7 @@ else
 fi
 
 log "Configuring opus..."
-cd /tmp/opus && ./configure
+cd /tmp/opus && ./configure --verbose
 
 log "Compiling opus..."
 make -C /tmp/opus -j$(nproc)
