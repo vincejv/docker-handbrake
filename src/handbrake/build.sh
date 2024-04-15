@@ -91,8 +91,8 @@ export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
 
-export CC=xx-clang
-export CXX=xx-clang++
+export CC=clang
+export CXX=clang++
 
 if [ -z "$HANDBRAKE_VERSION" ]; then
     log "ERROR: HandBrake version missing."
@@ -175,16 +175,14 @@ apt-get install -y \
     libglib2.0-dev \
     xz-utils \
 
-xx-apt-get install -y \
-    xx-c-essentials \
-    xx-cxx-essentials \
+apt-get install -y \
     build-essential \
     ninja-build \
     patch \
     libssl-dev \
 
 # misc libraries
-xx-apt-get install -y \
+apt-get install -y \
     libtool \
     libtool-bin \
     libjansson-dev \
@@ -193,12 +191,12 @@ xx-apt-get install -y \
     libturbojpeg0-dev \
 
 # media libraries
-xx-apt-get install -y \
+apt-get install -y \
     libsamplerate0-dev \
     libass-dev \
 
 # media codecs
-xx-apt-get install -y \
+apt-get install -y \
     libx264-dev \
     libogg-dev \
     libtheora-dev \
@@ -208,7 +206,7 @@ xx-apt-get install -y \
     libvpx-dev \
 
 # gtk
-xx-apt-get install -y \
+apt-get install -y \
     libgtk-3-dev \
     libdbus-glib-1-dev \
     libnotify-dev \
@@ -457,31 +455,31 @@ make -C /tmp/opus install
 # fi
 
 log "Patching HandBrake..."
-if xx-info is-cross; then
-    patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
-fi
+# if xx-info is-cross; then
+#     patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
+# fi
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/av1_svt180_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/enable-svt-av1-avx512.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/opus_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/language.patch
 
 # Create the meson cross compile config file.
-if xx-info is-cross; then
-    cat << EOF > /tmp/handbrake/contrib/cross-config.meson
-[binaries]
-pkgconfig = '$(xx-info)-pkg-config'
+# if xx-info is-cross; then
+#     cat << EOF > /tmp/handbrake/contrib/cross-config.meson
+# [binaries]
+# pkgconfig = '$(xx-info)-pkg-config'
 
-[properties]
-sys_root = '$(xx-info sysroot)'
-pkg_config_libdir = '$(xx-info sysroot)/usr/lib/pkgconfig'
+# [properties]
+# sys_root = '$(xx-info sysroot)'
+# pkg_config_libdir = '$(xx-info sysroot)/usr/lib/pkgconfig'
 
-[host_machine]
-system = 'linux'
-cpu_family = '$(xx-info arch)'
-cpu = '$(xx-info arch)'
-endian = 'little'
-EOF
-fi
+# [host_machine]
+# system = 'linux'
+# cpu_family = '$(xx-info arch)'
+# cpu = '$(xx-info arch)'
+# endian = 'little'
+# EOF
+# fi
 
 #
 # Set compiler optimization on HB build
@@ -494,9 +492,9 @@ log "Configuring HandBrake..."
 (
     CONF_FLAGS="--disable-qsv --disable-nvenc"
 
-    if xx-info is-cross; then
-        CONF_FLAGS="$CONF_FLAGS --cross $(xx-info)"
-    fi
+    # if xx-info is-cross; then
+    #     CONF_FLAGS="$CONF_FLAGS --cross $(xx-info)"
+    # fi
 
     cd /tmp/handbrake && ./configure \
         --verbose \
@@ -517,18 +515,15 @@ make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
 # Remove uneeded installed files.
-if [ "$(xx-info arch)" = "amd64" ]; then
-    rm -rf \
-        /tmp/handbrake-install/usr/include \
-        /tmp/handbrake-install/usr/lib/*.la \
-        /tmp/handbrake-install/usr/lib/libmfx.* \
-        /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
-        /tmp/handbrake-install/usr/lib/dri/*.la \
-        /tmp/handbrake-install/usr/lib/pkgconfig \
-        /tmp/handbrake-install/usr/share/metainfo \
-        /tmp/handbrake-install/usr/share/applications \
-
-fi
+rm -rf \
+    /tmp/handbrake-install/usr/include \
+    /tmp/handbrake-install/usr/lib/*.la \
+    /tmp/handbrake-install/usr/lib/libmfx.* \
+    /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
+    /tmp/handbrake-install/usr/lib/dri/*.la \
+    /tmp/handbrake-install/usr/lib/pkgconfig \
+    /tmp/handbrake-install/usr/share/metainfo \
+    /tmp/handbrake-install/usr/share/applications \
 
 log "Handbrake install content:"
 find /tmp/handbrake-install

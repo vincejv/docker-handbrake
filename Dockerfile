@@ -29,16 +29,16 @@ ARG HANDBRAKE_URL
 ARG HANDBRAKE_DEBUG_MODE
 ARG MARCH
 
-COPY --from=xx / /
+# COPY --from=xx / /
 COPY src/handbrake /build
 RUN /build/build.sh \
     "$HANDBRAKE_VERSION" \
     "$HANDBRAKE_URL" \
     "$HANDBRAKE_DEBUG_MODE" \
     "$MARCH"
-RUN xx-verify \
-    /tmp/handbrake-install/usr/bin/ghb \
-    /tmp/handbrake-install/usr/bin/HandBrakeCLI
+# RUN xx-verify \
+#     /tmp/handbrake-install/usr/bin/ghb \
+#     /tmp/handbrake-install/usr/bin/HandBrakeCLI
 
 # Build cpu_features.
 FROM --platform=$BUILDPLATFORM ubuntu:jammy AS cpu_features
