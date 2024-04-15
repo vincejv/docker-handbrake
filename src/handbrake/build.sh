@@ -175,7 +175,7 @@ apt-get install -y \
     libglib2.0-dev \
 
 xx-apt-get install -y \
-    clang-15 \
+    clang \
     xx-c-essentials \
     xx-cxx-essentials \
     build-essential \
@@ -276,7 +276,7 @@ fi
 #
 # Set compiler optimization on build
 #
-export CFLAGS="$CFLAGS -march=${MARCH} -mtune=${MARCH}"
+export CFLAGS="-O3 -pipe -march=${MARCH} -mtune=${MARCH} -fomit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
