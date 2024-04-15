@@ -95,7 +95,6 @@ RUN \
         # Media codecs:
         libtheora0 \
         libmp3lame0 \
-        libopus0 \
         libvorbis0a \
         libvorbisenc2 \
         libspeex1 \
@@ -124,6 +123,7 @@ RUN \
 # Add files.
 COPY rootfs/ /
 COPY --from=handbrake /tmp/handbrake-install /
+COPY --from=handbrake /usr/local/lib/libopus* /usr/lib/x86_64-linux-gnu/
 COPY --from=cpu_features /tmp/cpu_features-install/bin/list_cpu_features /usr/bin/
 
 # Set internal environment variables.
