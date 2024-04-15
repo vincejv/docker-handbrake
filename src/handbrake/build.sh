@@ -218,10 +218,9 @@ apt-get install -y \
 
 # download install clang and llvm
 log "Installing clang and llvm"
-mkdir /tmp/clang
-curl -# -L -f https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/clang+llvm-17.0.6-x86_64-linux-gnu-ubuntu-22.04.tar.xz | tar xJ --strip 1 -C /tmp/clang
-ls -alh /tmp/clang
-export PATH="/tmp/clang/bin:${PATH}"
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+./llvm.sh 18
 
 # install rust, rustup, cargo-c
 log "Installing rust"
