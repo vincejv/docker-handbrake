@@ -66,4 +66,4 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.commit.outputs.short }}
           body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: "/tmp/handbrake/build/libhb/*,/tmp/handbrake/build/HandBrakeCLI.exe"
+          artifacts: "/tmp/handbrake/build/libhb/*.dll,/tmp/handbrake/build/HandBrakeCLI.exe"
