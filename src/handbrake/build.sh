@@ -281,16 +281,7 @@ else
 fi
 
 log "Configuring opus..."
-(
-   cd /tmp/opus && ./configure \
-       --prefix=/usr \
-       --enable-shared \
-       --disable-static \
-       --enable-pic \
-       --disable-cli \
-       --extra-cflags=-fno-aggressive-loop-optimizations \
-       --enable-strip \
-)
+cd /tmp/opus && ./configure
 
 log "Compiling opus..."
 make -C /tmp/opus -j$(nproc)
