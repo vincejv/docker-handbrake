@@ -63,5 +63,7 @@ jobs:
       - name: Github release
         uses: ncipollo/release-action@v1
         with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.commit.outputs.short }}
+          body: ${{ steps.tag_version.outputs.changelog }}
           artifacts: "/tmp/handbrake/build/libhb/*,/tmp/handbrake/build/HandBrakeCLI.exe"
