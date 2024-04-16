@@ -76,6 +76,7 @@ HANDBRAKE_VERSION="${1:-}"
 HANDBRAKE_URL="${2:-}"
 HANDBRAKE_DEBUG_MODE="${3:-}"
 MARCH="${4:-}"
+X264_URL="https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x264-snapshot-20240314-3186.tar.gz"
 # LIBVA_URL="${4:-}"
 # INTEL_VAAPI_DRIVER_URL="${5:-}"
 # GMMLIB_URL="${6:-}"
@@ -201,7 +202,6 @@ apt-get install -y \
 
 # media codecs
 apt-get install -y \
-    libx264-dev \
     libogg-dev \
     libtheora-dev \
     libmp3lame-dev \
@@ -236,9 +236,9 @@ cargo install -j$(nproc) cargo-c
 # Download sources.
 #
 
-#log "Downloading x264 sources..."
-#mkdir /tmp/x264
-#curl -# -L -f ${X264_URL} | tar xz --strip 1 -C /tmp/x264
+log "Downloading x264 sources..."
+mkdir /tmp/x264
+curl -# -L -f ${X264_URL} | tar xz --strip 1 -C /tmp/x264
 
 # log "Downloading libva sources..."
 # mkdir /tmp/libva
@@ -309,30 +309,27 @@ make -C /tmp/opus -j$(nproc)
 log "Installing opus..."
 make -C /tmp/opus install
 
-#log "Configuring x264..."
-#if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
-#    X264_CMAKE_OPTS=--enable-strip
-#else
-#    X264_CMAKE_OPTS=--enable-debug
-#fi
-#(
-#    cd /tmp/x264 && CFLAGS="${CFLAGS/-Os/}" ./configure \
-#        --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-#        --host=$(xx-clang --print-target-triple) \
-#        --prefix=/usr \
-#        --enable-shared \
-#        --disable-static \
-#        --enable-pic \
-#        --disable-cli \
-#        --extra-cflags=-fno-aggressive-loop-optimizations \
-#        $X264_CMAKE_OPTS \
-#)
+log "Configuring x264..."
+if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
+   X264_CMAKE_OPTS=--enable-strip
+else
+   X264_CMAKE_OPTS=--enable-debug
+fi
+(
+   cd /tmp/x264 && ./configure \
+       --prefix=/usr \
+       --enable-shared \
+       --disable-static \
+       --enable-pic \
+       --disable-cli \
+       $X264_CMAKE_OPTS \
+)
 
-#log "Compiling x264..."
-#make -C /tmp/x264 -j$(nproc)
-#
-#log "Installing x264..."
-#make -C /tmp/x264 install
+log "Compiling x264..."
+make -C /tmp/x264 -j$(nproc)
+
+log "Installing x264..."
+make -C /tmp/x264 install
 
 # log "Configuring libva..."
 # (

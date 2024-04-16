@@ -79,7 +79,6 @@ RUN \
         libspeex1 \
         libturbojpeg \
         libvpx7 \
-        libx264-163 \
         # A font is needed.
         fonts-cantarell \
         # For main, big icons:
@@ -102,7 +101,7 @@ RUN \
 # Add files.
 COPY rootfs/ /
 COPY --from=handbrake /tmp/handbrake-install /
-COPY --from=handbrake /usr/local/lib/libopus* /usr/lib/x86_64-linux-gnu/
+COPY --from=handbrake /usr/local/lib/libopus.so* /usr/local/lib/libx264.so* /usr/lib/x86_64-linux-gnu/
 COPY --from=cpu_features /tmp/cpu_features-install/bin/list_cpu_features /usr/bin/
 
 # Set internal environment variables.
