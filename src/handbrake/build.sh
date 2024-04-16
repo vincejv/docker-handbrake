@@ -215,7 +215,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/av1_svt180_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/enable-svt-av1-avx512.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/opus_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/language.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/x265_upgrade.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/x264_x265_upgrade.patch
 
 # # Create the meson cross compile config file.
 # if xx-info is-cross; then
