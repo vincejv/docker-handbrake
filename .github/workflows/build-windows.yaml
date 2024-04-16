@@ -60,15 +60,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Cargo-C Toolchain Cache
-        id: windows-cargo-c-toolchain
-        uses: actions/cache@v3
-        with:
-          path: |
-            /root/.cargo/bin/cargo-capi
-            /root/.cargo/bin/cargo-cbuild
-            /root/.cargo/bin/cargo-cinstall
-          key: windows-cargo-c-toolchain
       - name: Build handbrake
         run: |
           sudo src/handbrake/build.sh \
@@ -77,20 +68,19 @@ jobs:
             ${{ env.HANDBRAKE_DEBUG_MODE }} \
             ${{ matrix.march }}
       - name: Upload as dll artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: win64-hb-dll-${{ matrix.march }}
           path: /tmp/handbrake/build/libhb/hb.dll
           if-no-files-found: error
           retention-days: 90
       - name: Upload as exe artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: win64-hb-cli-${{ matrix.march }}
           path: /tmp/handbrake/build/HandBrakeCLI.exe
           if-no-files-found: error
           retention-days: 90
-
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
