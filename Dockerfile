@@ -101,7 +101,7 @@ RUN \
 # Add files.
 COPY rootfs/ /
 COPY --from=handbrake /tmp/handbrake-install /
-COPY --from=handbrake /usr/local/lib/libopus.so* /usr/local/lib/libx264.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=handbrake /usr/local/lib/libopus.so* /usr/lib/libx264.so* /usr/lib/x86_64-linux-gnu/
 COPY --from=cpu_features /tmp/cpu_features-install/bin/list_cpu_features /usr/bin/
 
 # Set internal environment variables.
