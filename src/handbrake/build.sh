@@ -155,11 +155,9 @@ apt-get install -y \
 
 # media codecs
 apt-get install -y \
-    libx264-dev \
     libogg-dev \
     libtheora-dev \
     libmp3lame-dev \
-    libopus-dev \
     libvorbis-dev \
     libspeex-dev \
     libvpx-dev \
