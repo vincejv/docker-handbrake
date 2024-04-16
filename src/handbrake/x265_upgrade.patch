@@ -1,13 +1,16 @@
-From 80546539e92eaa46a873b42b94c5e7c77ab616bc Mon Sep 17 00:00:00 2001
+From 0d09f442ef49a5bce63bf48fa1956cbd4fab8daf Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Tue, 16 Apr 2024 10:21:33 +0800
-Subject: [PATCH] x265 upgrade
+Date: Tue, 16 Apr 2024 11:42:59 +0800
+Subject: [PATCH] Upgrade x265 to v3.6
 
 ---
- contrib/x265/A00-crosscompile-fix.patch | 19 -----------
- contrib/x265/A06-crosscompile-fix.patch | 42 +++++++++++++++++++++++++
- contrib/x265/module.defs                |  5 +--
- 3 files changed, 45 insertions(+), 21 deletions(-)
+ contrib/x265/A00-crosscompile-fix.patch | 19 ------
+ contrib/x265/A06-crosscompile-fix.patch | 42 ++++++++++++
+ contrib/x265/module.defs                |  5 +-
+ contrib/x265_10bit/module.defs          | 17 ++---
+ contrib/x265_12bit/module.defs          | 17 ++---
+ contrib/x265_8bit/module.defs           | 89 +++++++++++++------------
+ 6 files changed, 105 insertions(+), 84 deletions(-)
  delete mode 100644 contrib/x265/A00-crosscompile-fix.patch
  create mode 100644 contrib/x265/A06-crosscompile-fix.patch
 
@@ -100,6 +103,229 @@ index 893de9e71..637d2310f 100644
  
  # Silence "warning: overriding recipe for target" messages
  X265.FETCH.target =
+diff --git a/contrib/x265_10bit/module.defs b/contrib/x265_10bit/module.defs
+index c8314bb28..75348a235 100644
+--- a/contrib/x265_10bit/module.defs
++++ b/contrib/x265_10bit/module.defs
+@@ -2,8 +2,9 @@ __deps__ := X265_8
+ $(eval $(call import.MODULE.defs,X265_10,x265_10,$(__deps__),x265))
+ $(eval $(call import.CONTRIB.defs,X265_10))
+ 
+-X265_10.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265-snapshot-20230403-12776.tar.gz
+-X265_10.FETCH.sha256  = 23898695c5520e9e971d12e88125d5ad03ad67f462fc8ecaa016b48adad7cb20
++X265_10.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265_3.6.tar.gz
++X265_10.FETCH.url    += https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.6.tar.gz
++X265_10.FETCH.sha256  = 663531f341c5389f460d730e62e10a4fcca3428ca2ca109693867bc5fe2e2807
+ 
+ # Silence "warning: overriding recipe for target" messages
+ X265_10.FETCH.target =
+@@ -11,6 +12,7 @@ X265_10.FETCH.target =
+ X265_10.build_dir             = 10bit
+ X265_10.CONFIGURE.exe         = cmake
+ X265_10.CONFIGURE.args.prefix = -DCMAKE_INSTALL_PREFIX="$(X265_10.CONFIGURE.prefix)"
++X265_10.CONFIGURE.args.host   = -DCMAKE_HOST_SYSTEM="$(X265_10.CONFIGURE.build)"
+ X265_10.CONFIGURE.deps        =
+ X265_10.CONFIGURE.static      =
+ X265_10.CONFIGURE.shared      = -DENABLE_SHARED=OFF
+@@ -58,15 +60,8 @@ ifeq (1,$(HOST.cross))
+         X265_10.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
+         X265_10.CONFIGURE.extra += -DCMAKE_RC_COMPILER=$(HOST.cross.prefix)windres
+         X265_10.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_10.CONFIGURE.host)"
+-    else ifeq ($(HOST.system),darwin)
+-        X265_10.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_10.CONFIGURE.host)"
+-    else
+-        X265_10.CONFIGURE.args.host = -DCMAKE_SYSTEM_NAME="$(X265_10.CONFIGURE.host)"
+     endif
+-    X265_10.CONFIGURE.args.build = -DCMAKE_HOST_SYSTEM="$(X265_10.CONFIGURE.build)"
+-    X265_10.CONFIGURE.extra     += -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
+-else
+-    X265_10.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_10.CONFIGURE.host)"
++    X265_10.CONFIGURE.args.build = -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
+ endif
+ 
+ ## find CMakeLists.txt
+@@ -82,4 +77,4 @@ X265_10.FETCH =
+ X265_10.VERIFY = $(TOUCH.exe) $@
+ X265_10.EXTRACT = $(TOUCH.exe) $@
+ X265_10.PATCH = $(TOUCH.exe) $@
+-X265_10.XCLEAN =
++X265_10.XCLEAN =
+\ No newline at end of file
+diff --git a/contrib/x265_12bit/module.defs b/contrib/x265_12bit/module.defs
+index 30fa1c5e6..daf27e3b5 100644
+--- a/contrib/x265_12bit/module.defs
++++ b/contrib/x265_12bit/module.defs
+@@ -2,8 +2,9 @@ __deps__ := X265_8
+ $(eval $(call import.MODULE.defs,X265_12,x265_12,$(__deps__),x265))
+ $(eval $(call import.CONTRIB.defs,X265_12))
+ 
+-X265_12.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265-snapshot-20230403-12776.tar.gz
+-X265_12.FETCH.sha256  = 23898695c5520e9e971d12e88125d5ad03ad67f462fc8ecaa016b48adad7cb20
++X265_12.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265_3.6.tar.gz
++X265_12.FETCH.url    += https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.6.tar.gz
++X265_12.FETCH.sha256  = 663531f341c5389f460d730e62e10a4fcca3428ca2ca109693867bc5fe2e2807
+ 
+ # Silence "warning: overriding recipe for target" messages
+ X265_12.FETCH.target =
+@@ -11,6 +12,7 @@ X265_12.FETCH.target =
+ X265_12.build_dir             = 12bit
+ X265_12.CONFIGURE.exe         = cmake
+ X265_12.CONFIGURE.args.prefix = -DCMAKE_INSTALL_PREFIX="$(X265_12.CONFIGURE.prefix)"
++X265_12.CONFIGURE.args.host   = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.build)"
+ X265_12.CONFIGURE.deps        =
+ X265_12.CONFIGURE.static      =
+ X265_12.CONFIGURE.shared      = -DENABLE_SHARED=OFF
+@@ -58,15 +60,8 @@ ifeq (1,$(HOST.cross))
+         X265_12.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
+         X265_12.CONFIGURE.extra += -DCMAKE_RC_COMPILER=$(HOST.cross.prefix)windres
+         X265_12.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.host)"
+-    else ifeq ($(HOST.system),darwin)
+-        X265_12.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.host)"
+-    else
+-        X265_12.CONFIGURE.args.host = -DCMAKE_SYSTEM_NAME="$(X265_12.CONFIGURE.host)"
+     endif
+-    X265_12.CONFIGURE.args.build = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.build)"
+-    X265_12.CONFIGURE.extra     += -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
+-else
+-    X265_12.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.host)"
++    X265_12.CONFIGURE.args.build = -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
+ endif
+ 
+ ## find CMakeLists.txt
+@@ -82,4 +77,4 @@ X265_12.FETCH =
+ X265_12.VERIFY = $(TOUCH.exe) $@
+ X265_12.EXTRACT = $(TOUCH.exe) $@
+ X265_12.PATCH = $(TOUCH.exe) $@
+-X265_12.XCLEAN =
++X265_12.XCLEAN =
+\ No newline at end of file
+diff --git a/contrib/x265_8bit/module.defs b/contrib/x265_8bit/module.defs
+index 688c8ce18..daf27e3b5 100644
+--- a/contrib/x265_8bit/module.defs
++++ b/contrib/x265_8bit/module.defs
+@@ -1,73 +1,80 @@
+-__deps__ := 
+-$(eval $(call import.MODULE.defs,X265_8,x265_8,$(__deps__),x265))
+-$(eval $(call import.CONTRIB.defs,X265_8))
++__deps__ := X265_8
++$(eval $(call import.MODULE.defs,X265_12,x265_12,$(__deps__),x265))
++$(eval $(call import.CONTRIB.defs,X265_12))
+ 
+-X265_8.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265-snapshot-20230403-12776.tar.gz
+-X265_8.FETCH.sha256  = 23898695c5520e9e971d12e88125d5ad03ad67f462fc8ecaa016b48adad7cb20
++X265_12.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265_3.6.tar.gz
++X265_12.FETCH.url    += https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.6.tar.gz
++X265_12.FETCH.sha256  = 663531f341c5389f460d730e62e10a4fcca3428ca2ca109693867bc5fe2e2807
+ 
+-X265_8.build_dir             = 8bit
+-X265_8.CONFIGURE.exe         = cmake
+-X265_8.CONFIGURE.args.prefix = -DCMAKE_INSTALL_PREFIX="$(X265_8.CONFIGURE.prefix)"
+-X265_8.CONFIGURE.deps        =
+-X265_8.CONFIGURE.static      =
+-X265_8.CONFIGURE.shared      = -DENABLE_SHARED=OFF
+-X265_8.CONFIGURE.extra       = -DENABLE_CLI=OFF -DHIGH_BIT_DEPTH=OFF -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
++# Silence "warning: overriding recipe for target" messages
++X265_12.FETCH.target =
++
++X265_12.build_dir             = 12bit
++X265_12.CONFIGURE.exe         = cmake
++X265_12.CONFIGURE.args.prefix = -DCMAKE_INSTALL_PREFIX="$(X265_12.CONFIGURE.prefix)"
++X265_12.CONFIGURE.args.host   = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.build)"
++X265_12.CONFIGURE.deps        =
++X265_12.CONFIGURE.static      =
++X265_12.CONFIGURE.shared      = -DENABLE_SHARED=OFF
++X265_12.CONFIGURE.extra       = -DENABLE_CLI=OFF -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DMAIN12=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+ 
+ ifneq (1,$(FEATURE.numa))
+-    X265_8.CONFIGURE.extra  += -DENABLE_LIBNUMA=OFF
++    X265_12.CONFIGURE.extra  += -DENABLE_LIBNUMA=OFF
+ endif
+ 
+ ifeq (size-aggressive,$(GCC.O))
+-    X265_8.CONFIGURE.extra += -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG" -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG"
++    X265_12.CONFIGURE.extra += -DCMAKE_CXX_FLAGS_MINSIZEREL="-Oz -DNDEBUG" -DCMAKE_C_FLAGS_MINSIZEREL="-Oz -DNDEBUG"
+ endif
+ 
+ ifeq (darwin,$(HOST.system))
+-    X265_8.CONFIGURE.extra += -DCMAKE_OSX_ARCHITECTURES=$(HOST.machine)
++    X265_12.CONFIGURE.extra += -DCMAKE_OSX_ARCHITECTURES=$(HOST.machine)
+ endif
+ 
+ ifeq ($(GCC.O),$(filter $(GCC.O),size size-aggressive))
+-    X265_8.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=MinSizeRel
++    X265_12.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=MinSizeRel
+ else
+-    ifneq (none,$(X265_8.GCC.g))
+-        X265_8.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=Debug
++    ifneq (none,$(X265_12.GCC.g))
++        X265_12.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=Debug
+     else
+-        X265_8.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=Release
++        X265_12.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=Release
+     endif
+ endif
+ 
+ ifeq (on,$(GCC.lto))
+-    X265_8.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE
++    X265_12.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE
+ else ifeq (thin,$(GCC.lto))
+-    X265_8.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DCMAKE_LTO_THIN=TRUE
++    X265_12.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE -DCMAKE_LTO_THIN=TRUE
+ else ifeq (off,$(GCC.lto))
+-    X265_8.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=FALSE
++    X265_12.CONFIGURE.extra += -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=FALSE
+ endif
+ 
+-X265_8.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_8.CONFIGURE.host)"
+ ifeq (1,$(HOST.cross))
+     ifeq (mingw,$(HOST.system))
+-        X265_8.CONFIGURE.extra += -DWIN32=ON
+-        X265_8.CONFIGURE.extra += -DCMAKE_SYSTEM_NAME=Windows
+-        X265_8.CONFIGURE.extra += -DCMAKE_C_COMPILER=$(X265_8.GCC.gcc)
+-        X265_8.CONFIGURE.extra += -DCMAKE_C_FLAGS="-static-libgcc -static-libstdc++ -static"
+-        X265_8.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="-static-libgcc -static-libstdc++ -static"
+-        X265_8.CONFIGURE.extra += -DCMAKE_CXX_COMPILER=$(X265_8.GCC.gxx)
+-        X265_8.CONFIGURE.extra += -DCMAKE_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
+-        X265_8.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
+-        X265_8.CONFIGURE.extra += -DCMAKE_RC_COMPILER=$(HOST.cross.prefix)windres
+-        X265_8.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_8.CONFIGURE.host)"
++        X265_12.CONFIGURE.extra += -DWIN32=ON
++        X265_12.CONFIGURE.extra += -DCMAKE_SYSTEM_NAME=Windows
++        X265_12.CONFIGURE.extra += -DCMAKE_C_COMPILER=$(X265_12.GCC.gcc)
++        X265_12.CONFIGURE.extra += -DCMAKE_C_FLAGS="-static-libgcc -static-libstdc++ -static"
++        X265_12.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="-static-libgcc -static-libstdc++ -static"
++        X265_12.CONFIGURE.extra += -DCMAKE_CXX_COMPILER=$(X265_12.GCC.gxx)
++        X265_12.CONFIGURE.extra += -DCMAKE_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
++        X265_12.CONFIGURE.extra += -DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="-static-libgcc -static-libstdc++ -static"
++        X265_12.CONFIGURE.extra += -DCMAKE_RC_COMPILER=$(HOST.cross.prefix)windres
++        X265_12.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_12.CONFIGURE.host)"
+     endif
+-    X265_8.CONFIGURE.args.build = -DCMAKE_HOST_SYSTEM="$(X265_8.CONFIGURE.build)"
+-    X265_8.CONFIGURE.extra     += -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
++    X265_12.CONFIGURE.args.build = -DCMAKE_SYSTEM_PROCESSOR=$(HOST.machine)
+ endif
+ 
+ ## find CMakeLists.txt
+-X265_8.CONFIGURE.extra += "$(call fn.ABSOLUTE,$(X265_8.EXTRACT.dir/)source/)"
++X265_12.CONFIGURE.extra += "$(call fn.ABSOLUTE,$(X265_12.EXTRACT.dir/)source/)"
+ 
+-X265_8.INSTALL.make = $(MV.exe)
+-X265_8.INSTALL.args.dir = cd $(1);
+-X265_8.INSTALL.extra = libx265.a libx265_main.a
+-X265_8.INSTALL.args = @dir !make !extra
++X265_12.INSTALL.make = $(MV.exe)
++X265_12.INSTALL.args.dir = cd $(1);
++X265_12.INSTALL.extra = libx265.a libx265_main12.a
++X265_12.INSTALL.args = @dir !make !extra
+ 
+ # Override operations that are not needed
+-X265_8.XCLEAN =
++X265_12.FETCH =
++X265_12.VERIFY = $(TOUCH.exe) $@
++X265_12.EXTRACT = $(TOUCH.exe) $@
++X265_12.PATCH = $(TOUCH.exe) $@
++X265_12.XCLEAN =
+\ No newline at end of file
 -- 
 2.34.1
 
