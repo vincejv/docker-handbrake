@@ -1,0 +1,105 @@
+From 80546539e92eaa46a873b42b94c5e7c77ab616bc Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Tue, 16 Apr 2024 10:21:33 +0800
+Subject: [PATCH] x265 upgrade
+
+---
+ contrib/x265/A00-crosscompile-fix.patch | 19 -----------
+ contrib/x265/A06-crosscompile-fix.patch | 42 +++++++++++++++++++++++++
+ contrib/x265/module.defs                |  5 +--
+ 3 files changed, 45 insertions(+), 21 deletions(-)
+ delete mode 100644 contrib/x265/A00-crosscompile-fix.patch
+ create mode 100644 contrib/x265/A06-crosscompile-fix.patch
+
+diff --git a/contrib/x265/A00-crosscompile-fix.patch b/contrib/x265/A00-crosscompile-fix.patch
+deleted file mode 100644
+index 38b270205..000000000
+--- a/contrib/x265/A00-crosscompile-fix.patch
++++ /dev/null
+@@ -1,19 +0,0 @@
+-diff --git a/source/CMakeLists.txt b/source/CMakeLists.txt
+-index 60031df63..7120f9414 100755
+---- a/source/CMakeLists.txt
+-+++ b/source/CMakeLists.txt
+-@@ -260,7 +260,13 @@ if(GCC)
+-         endif()
+-     endif()
+- 	if(ARM64 OR CROSS_COMPILE_ARM64)
+--	    set(ARM_ARGS -fPIC -flax-vector-conversions)
+-+        if (MINGW)
+-+            set(ARM_ARGS -flax-vector-conversions)
+-+        elseif(APPLE)
+-+            set(ARM_ARGS -fPIC -flax-vector-conversions -arch ${CMAKE_OSX_ARCHITECTURES})
+-+        else()
+-+            set(ARM_ARGS -fPIC -flax-vector-conversions)
+-+        endif()
+-         find_package(Neon)
+-         if(CPU_HAS_NEON)
+-             add_definitions(-DHAVE_NEON)
+diff --git a/contrib/x265/A06-crosscompile-fix.patch b/contrib/x265/A06-crosscompile-fix.patch
+new file mode 100644
+index 000000000..9cb678fef
+--- /dev/null
++++ b/contrib/x265/A06-crosscompile-fix.patch
+@@ -0,0 +1,42 @@
++diff --git a/source/CMakeLists.txt b/source/CMakeLists.txt
++index ab5ddfeb7..88693a3da 100755
++--- a/source/CMakeLists.txt
+++++ b/source/CMakeLists.txt
++@@ -80,12 +80,13 @@ elseif(ARMMATCH GREATER "-1")
++     set(ARM 1)
++     add_definitions(-DX265_ARCH_ARM=1 -DHAVE_ARMV6=1)
++ elseif(ARM64MATCH GREATER "-1")
++-    #if(CROSS_COMPILE_ARM64)
++-        #message(STATUS "Cross compiling for ARM64 arch")
++-    #else()
++-        #set(CROSS_COMPILE_ARM64 0)
++-    #endif()
++-    message(STATUS "Detected ARM64 target processor")
+++    list(FIND ARM64_ALIASES "${CMAKE_HOST_SYSTEM_PROCESSOR}" NATIVE_ARCH)
+++    if(NATIVE_ARCH EQUAL "-1")
+++        message(STATUS "Cross compiling for ARM64 arch")
+++        set(CROSS_COMPILE_ARM64 1)
+++    else()
+++        set(CROSS_COMPILE_ARM64 0)
+++    endif()
++     set(ARM64 1)
++     add_definitions(-DX265_ARCH_ARM64=1 -DHAVE_NEON)
++ else()
++@@ -274,9 +275,15 @@ if(GCC)
++             set(ARM_ARGS -O3 -march=armv8-a+sve -fPIC -flax-vector-conversions)
++             add_definitions(-DHAVE_SVE)
++             add_definitions(-DHAVE_NEON) # for NEON c/c++ primitives, as currently there is no implementation that use SVE
++-        elseif(CPU_HAS_NEON)
+++        elseif(CPU_HAS_NEON OR CROSS_COMPILE_ARM64)
++             message(STATUS "Found NEON")
++-            set(ARM_ARGS -fPIC -flax-vector-conversions)
+++            if (MINGW)
+++                set(ARM_ARGS -flax-vector-conversions)
+++            elseif(APPLE)
+++                set(ARM_ARGS -fPIC -flax-vector-conversions -arch ${CMAKE_OSX_ARCHITECTURES})
+++            else()
+++                set(ARM_ARGS -fPIC -flax-vector-conversions)
+++            endif()
++             add_definitions(-DHAVE_NEON)
++         else()
++             set(ARM_ARGS -fPIC -flax-vector-conversions)
+diff --git a/contrib/x265/module.defs b/contrib/x265/module.defs
+index 893de9e71..637d2310f 100644
+--- a/contrib/x265/module.defs
++++ b/contrib/x265/module.defs
+@@ -2,8 +2,9 @@ __deps__ := X265_8 X265_10 X265_12
+ $(eval $(call import.MODULE.defs,X265,x265,$(__deps__)))
+ $(eval $(call import.CONTRIB.defs,X265))
+ 
+-X265.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265-snapshot-20230403-12776.tar.gz
+-X265.FETCH.sha256  = 23898695c5520e9e971d12e88125d5ad03ad67f462fc8ecaa016b48adad7cb20
++X265.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x265_3.6.tar.gz
++X265.FETCH.url    += https://bitbucket.org/multicoreware/x265_git/downloads/x265_3.6.tar.gz
++X265.FETCH.sha256  = 663531f341c5389f460d730e62e10a4fcca3428ca2ca109693867bc5fe2e2807
+ 
+ # Silence "warning: overriding recipe for target" messages
+ X265.FETCH.target =
+-- 
+2.34.1
+
