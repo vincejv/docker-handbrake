@@ -256,7 +256,7 @@ export CFLAGS="$CFLAGS -march=$MARCH"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
-export PATH="/tmp/toolchains/bin:${PATH}"
+export PATH="/tmp/toolchains/mingw-w64-x86_64/bin:${PATH}"
 
 log "Configuring HandBrake..."
 (
