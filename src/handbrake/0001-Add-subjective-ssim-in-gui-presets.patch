@@ -1,0 +1,25 @@
+From 56223167666907d8a8cef258ce298080de4b6e30 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Thu, 18 Apr 2024 17:15:13 +0800
+Subject: [PATCH 1/2] Add subjective ssim in gui presets
+
+---
+ libhb/handbrake/av1_common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libhb/handbrake/av1_common.h b/libhb/handbrake/av1_common.h
+index 250c0cd6b..d33251db2 100644
+--- a/libhb/handbrake/av1_common.h
++++ b/libhb/handbrake/av1_common.h
+@@ -31,7 +31,7 @@ static const char * const av1_svt_preset_names[] =
+ 
+ static const char * const av1_svt_tune_names[] =
+ {
+-    "psnr", "ssim", "fastdecode", NULL
++    "psnr", "ssim", "subjective ssim", "fastdecode", NULL
+ };
+ 
+ static const char * const av1_svt_profile_names[] =
+-- 
+2.34.1
+
