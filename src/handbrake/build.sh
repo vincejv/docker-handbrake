@@ -301,7 +301,7 @@ export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
 log "Configuring opus..."
-cd /tmp/opus && ./configure --verbose
+cd /tmp/opus && ./configure --verbose --disable-hardening 
 
 log "Compiling opus..."
 make -C /tmp/opus -j$(nproc)
@@ -322,6 +322,8 @@ fi
        --disable-static \
        --enable-pic \
        --disable-cli \
+       --enable-lto  \
+       --enable-strip \
        $X264_CMAKE_OPTS \
 )
 
@@ -507,6 +509,7 @@ log "Configuring HandBrake..."
         --enable-fdk-aac \
         --enable-x265 \
         --enable-libdovi \
+        --no-harden \
         $CONF_FLAGS \
 )
 
