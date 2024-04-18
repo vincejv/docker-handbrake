@@ -90,7 +90,7 @@ X264_URL="https://github.com/HandBrake/HandBrake-contribs/releases/download/cont
 export CFLAGS="-O3 -pipe -fomit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
-export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
+export LDFLAGS="-O3 -Wl,--strip-all -Wl,--as-needed"
 
 export CC=clang-18
 export CXX=clang++-18
@@ -296,7 +296,7 @@ fi
 #
 # Set compiler optimization on build
 #
-export CFLAGS="$CFLAGS -march=$MARCH"
+export CFLAGS="$CFLAGS -march=$MARCH -fno-stack-protector -U_FORTIFY_SOURCE"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
