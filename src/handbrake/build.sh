@@ -72,8 +72,8 @@ export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
 
-export CC=clang
-export CXX=clang++
+# export CC=clang
+# export CXX=clang++
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
