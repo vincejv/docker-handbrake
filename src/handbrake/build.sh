@@ -234,14 +234,14 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/x264_x265_upgrade.patch
 # fi
 
 log "Setup toolchain for windows"
-wget https://github.com/mstorsjo/llvm-mingw/releases/download/20240417/llvm-mingw-20240417-msvcrt-ubuntu-20.04-x86_64.tar.xz
-SHA=$(sha1sum llvm-mingw-20240417-msvcrt-ubuntu-20.04-x86_64.tar.xz)
-EXPECTED="12d07dffbce417356aba9e3568402a78fcab2eed  llvm-mingw-20240417-msvcrt-ubuntu-20.04-x86_64.tar.xz"
+wget https://github.com/bradleysepos/mingw-w64-build/releases/download/10.0.0/mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz
+SHA=$(sha1sum mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz)
+EXPECTED="f7250d140a72bdfdda2d4cd01d84e9a3938132b1  mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz"
 if [ "$SHA" = "$EXPECTED" ];
 then
     echo "Toolchain Verified. Extracting ..."
     mkdir /tmp/toolchains/
-    tar xf llvm-mingw-20240417-msvcrt-ubuntu-20.04-x86_64.tar.xz --strip-components=1 -C /tmp/toolchains
+    tar xzf mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz --strip-components=1 -C /tmp/toolchains
     log "Toolchains directory"
     ls -alh /tmp/toolchains
 else
