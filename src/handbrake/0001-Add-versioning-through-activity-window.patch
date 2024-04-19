@@ -1,0 +1,24 @@
+From b70f1349a01102fc795a55f3627f0a5fe6a025c8 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Sat, 20 Apr 2024 00:35:18 +0800
+Subject: [PATCH] Add versioning through activity window
+
+---
+ make/configure.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/make/configure.py b/make/configure.py
+index b5a6468b9..b6d8c9f80 100644
+--- a/make/configure.py
++++ b/make/configure.py
+@@ -968,6 +968,7 @@ class Project( Action ):
+             self.vmajor = int(vmajor)
+             self.vminor = int(vminor)
+             self.vpoint = int(vpoint)
++            suffix = "Git-Commit-Hash"
+             if suffix:
+                 self.suffix = suffix
+ 
+-- 
+2.34.1
+
