@@ -475,7 +475,9 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/opus_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/language.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/x264_x265_upgrade.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-presets.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0002-Merge-global-motion-estimation-patch.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
 
 # Create the meson cross compile config file.
 # if xx-info is-cross; then

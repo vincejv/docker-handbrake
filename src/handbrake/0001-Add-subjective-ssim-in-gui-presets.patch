@@ -1,7 +1,7 @@
-From 94b999889ffe2629dbf0def86ce104a88496b04e Mon Sep 17 00:00:00 2001
+From 81bf203929422f0ee982f96007be9c992893755c Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Thu, 18 Apr 2024 19:02:19 +0800
-Subject: [PATCH] Add subjective ssim, extended crf and half-step increments
+Date: Fri, 19 Apr 2024 14:59:54 +0800
+Subject: [PATCH] Add subjective ssim and quarter-step increments
 
 ---
  libhb/common.c               | 4 ++--
@@ -26,10 +26,10 @@ index aad4493ce..5f8479b53 100644
  
          case HB_VCODEC_VT_H264:
 diff --git a/libhb/encsvtav1.c b/libhb/encsvtav1.c
-index d67d5f500..381e9118a 100644
+index 9440f790f..c6866d695 100644
 --- a/libhb/encsvtav1.c
 +++ b/libhb/encsvtav1.c
-@@ -191,6 +191,10 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+@@ -205,6 +205,10 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
      {
          param->tune = 1;
      }
