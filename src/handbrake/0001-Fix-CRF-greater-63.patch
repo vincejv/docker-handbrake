@@ -34,7 +34,7 @@ index 70d904a17..c6866d695 100644
 +    } else // extended crf
 +    {
 +        param->qp                         = MAX_QP_VALUE;
-+        param->extended_crf_qindex_offset = (vquality - MAX_QP_VALUE) * 4
++        param->extended_crf_qindex_offset = (vquality - MAX_QP_VALUE) * 4;
 +    }
  }
  
