@@ -1,0 +1,51 @@
+From 89cbedbfc84fce8a912a7c0354e6ecf428f8cc30 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Fri, 19 Apr 2024 00:21:59 +0800
+Subject: [PATCH] Allow the use of extended CRF
+
+---
+ libhb/encsvtav1.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/libhb/encsvtav1.c b/libhb/encsvtav1.c
+index 381e9118a..edc633082 100644
+--- a/libhb/encsvtav1.c
++++ b/libhb/encsvtav1.c
+@@ -23,6 +23,7 @@ void encsvtClose(hb_work_object_t *);
+ 
+ #define FRAME_INFO_SIZE 2048
+ #define FRAME_INFO_MASK (FRAME_INFO_SIZE - 1)
++#define MAX_STANDARD_CRF 63
+ 
+ hb_work_object_t hb_encsvtav1 =
+ {
+@@ -88,6 +89,17 @@ static int alloc_buffer(EbSvtAv1EncConfiguration *config, hb_work_private_t *pv)
+     return 0;
+ }
+ 
++void set_extended_crf(EbSvtAv1EncConfiguration *param, int vquality) {
++    if (vquality <= MAX_STANDARD_CRF) // standard crf
++    { 
++        param->qp = vquality
++    } else
++    {
++        param->qp                         = MAX_STANDARD_CRF; // max for crf
++        param->extended_crf_qindex_offset = vquality - MAX_STANDARD_CRF;
++    }
++}
++
+ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+ {
+     hb_work_private_t *pv = calloc(1, sizeof(hb_work_private_t));
+@@ -123,7 +135,7 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+     }
+     else
+     {
+-        param->qp                = job->vquality;
++        set_extended_crf(param);
+         param->rate_control_mode = SVT_AV1_RC_MODE_CQP_OR_CRF;
+         param->force_key_frames = 1;
+     }
+-- 
+2.34.1
+
