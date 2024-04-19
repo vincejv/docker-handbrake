@@ -28,7 +28,7 @@ index 70d904a17..c6866d695 100644
 -    param->extended_crf_qindex_offset = decimalPart / 25;
 +    if (vquality <= MAX_QP_VALUE) // for crf <= 63
 +    {
-+        double decimalPart                = vquality - (int)vquality; // Get the decimal part
++        int decimalPart                   = (vquality - (int)vquality) * 100; // Get the decimal part
 +        param->qp                         = vquality; // truncated automatically
 +        param->extended_crf_qindex_offset = decimalPart / 25;
 +    } else // extended crf
