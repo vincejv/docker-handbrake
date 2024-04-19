@@ -76,6 +76,7 @@ HANDBRAKE_VERSION="${1:-}"
 HANDBRAKE_URL="${2:-}"
 HANDBRAKE_DEBUG_MODE="${3:-}"
 MARCH="${4:-}"
+HB_BUILD="${5:-}"
 X264_URL="https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x264-snapshot-20240314-3186.tar.gz"
 # LIBVA_URL="${4:-}"
 # INTEL_VAAPI_DRIVER_URL="${5:-}"
@@ -478,6 +479,8 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-pres
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0002-Merge-global-motion-estimation-patch.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
+sed '0,/Git-Commit-Hash/s//${HB_BUILD}/' "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 
 # Create the meson cross compile config file.
 # if xx-info is-cross; then

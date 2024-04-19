@@ -1,0 +1,33 @@
+From df3997ad7a68f46c66106b607e3ab7072dc24865 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Sat, 20 Apr 2024 00:03:55 +0800
+Subject: [PATCH] Add versioning through activity window
+
+---
+ make/configure.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/make/configure.py b/make/configure.py
+index b5a6468b9..5e6f2ebfa 100644
+--- a/make/configure.py
++++ b/make/configure.py
+@@ -931,7 +931,7 @@ class Project( Action ):
+     def __init__( self ):
+         super( Project, self ).__init__( 'compute', 'project data' )
+ 
+-        self.name          = 'HandBrake'
++        self.name          = 'HandBrake-Reloaded'
+         self.acro_lower    = 'hb'
+         self.acro_upper    = 'HB'
+         self.url_website   = 'https://handbrake.fr'
+@@ -968,6 +968,7 @@ class Project( Action ):
+             self.vmajor = int(vmajor)
+             self.vminor = int(vminor)
+             self.vpoint = int(vpoint)
++            suffix = "Git-Commit-Hash"
+             if suffix:
+                 self.suffix = suffix
+ 
+-- 
+2.34.1
+

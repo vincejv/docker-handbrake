@@ -68,7 +68,7 @@ jobs:
           context: .
           file: Dockerfile
           platforms: ${{ matrix.platform }}
-          build-args: MARCH=${{ matrix.march }}
+          build-args: MARCH=${{ matrix.march }} HB_BUILD=${{ steps.commit.outputs.short }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: | 

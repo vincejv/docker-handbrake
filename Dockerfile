@@ -28,6 +28,7 @@ ARG HANDBRAKE_VERSION
 ARG HANDBRAKE_URL
 ARG HANDBRAKE_DEBUG_MODE
 ARG MARCH
+ARG HB_BUILD
 
 # COPY --from=xx / /
 COPY src/handbrake /build
@@ -35,7 +36,8 @@ RUN /build/build.sh \
     "$HANDBRAKE_VERSION" \
     "$HANDBRAKE_URL" \
     "$HANDBRAKE_DEBUG_MODE" \
-    "$MARCH"
+    "$MARCH" \
+    "$HB_BUILD"
 # RUN xx-verify \
 #     /tmp/handbrake-install/usr/bin/ghb \
 #     /tmp/handbrake-install/usr/bin/HandBrakeCLI
