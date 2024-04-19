@@ -60,13 +60,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Retrieve commit
+        id: commit
+        uses: prompt/actions-commit-hash@v3
       - name: Build handbrake
         run: |
           sudo src/handbrake/build.sh \
             ${{ env.HANDBRAKE_VERSION }} \
             https://github.com/HandBrake/HandBrake/releases/download/${{ env.HANDBRAKE_VERSION }}/HandBrake-${{ env.HANDBRAKE_VERSION }}-source.tar.bz2 \
             ${{ env.HANDBRAKE_DEBUG_MODE }} \
-            ${{ matrix.march }}
+            ${{ matrix.march }} \
+            ${{ steps.commit.outputs.short }}
       - name: Upload as dll artifact
         uses: actions/upload-artifact@v4
         with:
