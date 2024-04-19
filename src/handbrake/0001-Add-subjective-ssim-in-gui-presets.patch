@@ -1,35 +1,32 @@
-From 94b999889ffe2629dbf0def86ce104a88496b04e Mon Sep 17 00:00:00 2001
+From cb4fe0c2586e1190c3d4908e381361989b9d8a1d Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Thu, 18 Apr 2024 19:02:19 +0800
-Subject: [PATCH] Add subjective ssim, extended crf and half-step increments
+Date: Fri, 19 Apr 2024 13:46:34 +0800
+Subject: [PATCH] Add subjective ssim and half-step increments
 
 ---
- libhb/common.c               | 4 ++--
+ libhb/common.c               | 2 +-
  libhb/encsvtav1.c            | 4 ++++
- libhb/handbrake/av1_common.h | 5 +++--
- 3 files changed, 9 insertions(+), 4 deletions(-)
+ libhb/handbrake/av1_common.h | 2 +-
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/libhb/common.c b/libhb/common.c
-index aad4493ce..5f8479b53 100644
+index aad4493ce..d1e12302a 100644
 --- a/libhb/common.c
 +++ b/libhb/common.c
-@@ -1483,9 +1483,9 @@ void hb_video_quality_get_limits(uint32_t codec, float *low, float *high,
+@@ -1483,7 +1483,7 @@ void hb_video_quality_get_limits(uint32_t codec, float *low, float *high,
          case HB_VCODEC_SVT_AV1:
          case HB_VCODEC_SVT_AV1_10BIT:
              *direction   = 1;
 -            *granularity = 1.;
-+            *granularity = 1.;
++            *granularity = 0.1;
              *low         = 0.;
--            *high        = 63.;
-+            *high        = 70.;
+             *high        = 63.;
              break;
- 
-         case HB_VCODEC_VT_H264:
 diff --git a/libhb/encsvtav1.c b/libhb/encsvtav1.c
-index d67d5f500..381e9118a 100644
+index ad346d056..70d904a17 100644
 --- a/libhb/encsvtav1.c
 +++ b/libhb/encsvtav1.c
-@@ -191,6 +191,10 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+@@ -197,6 +197,10 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
      {
          param->tune = 1;
      }
@@ -41,20 +38,10 @@ index d67d5f500..381e9118a 100644
      {
          param->tune = 0;
 diff --git a/libhb/handbrake/av1_common.h b/libhb/handbrake/av1_common.h
-index 250c0cd6b..c003f859f 100644
+index 250c0cd6b..d33251db2 100644
 --- a/libhb/handbrake/av1_common.h
 +++ b/libhb/handbrake/av1_common.h
-@@ -22,7 +22,8 @@ static const char * const hb_av1_level_names[] = {
- 
- static const int          hb_av1_level_values[] = {
-      -1,  20,  21,  22,  23,  30,  31,  32,  33,  40,  41,  42,
--     43,  50,  51,  52,  53,  60,  61,  62,  63,  0 };
-+     43,  50,  51,  52,  53,  60,  61,  62,  63,  64,  65,  66,
-+     67,  68,  69,  70,  0 };
- 
- static const char * const av1_svt_preset_names[] =
- {
-@@ -31,7 +32,7 @@ static const char * const av1_svt_preset_names[] =
+@@ -31,7 +31,7 @@ static const char * const av1_svt_preset_names[] =
  
  static const char * const av1_svt_tune_names[] =
  {
