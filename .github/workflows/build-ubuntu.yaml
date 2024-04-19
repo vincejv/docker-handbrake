@@ -58,6 +58,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Retrieve commit
+        id: commit
+        uses: prompt/actions-commit-hash@v3
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v5
@@ -69,5 +72,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: | 
-            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu
+            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-latest
+            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-${{ steps.commit.outputs.short }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-${{ steps.commit.outputs.short }}
