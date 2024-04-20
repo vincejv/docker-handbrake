@@ -1,25 +1,24 @@
-From d8d88365c08762fd7e69349f067603bd1425c222 Mon Sep 17 00:00:00 2001
+From 38b52af877311ed1b42fcca89f22ed8c77568329 Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Sun, 21 Apr 2024 00:24:48 +0800
+Date: Sun, 21 Apr 2024 02:43:49 +0800
 Subject: [PATCH] Add versioning through activity window
 
 ---
- make/configure.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ make/configure.py | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/make/configure.py b/make/configure.py
-index b5a6468b9..60f89e003 100644
+index b5a6468b9..06a8d12a6 100644
 --- a/make/configure.py
 +++ b/make/configure.py
-@@ -1004,7 +1004,7 @@ class Project( Action ):
-                 url_ntype = 'unstable'
- 
-             self.build = time.strftime('%Y%m%d', now) + '00'
--            self.title = '%s %s (%s)' % (self.name,self.version,self.build)
-+            self.title = '%s-Reloaded %s (%s)-%s' % (self.name,self.version,self.build, "Git-Commit-Hash")
+@@ -1008,6 +1008,7 @@ class Project( Action ):
  
          self.url_appcast = 'https://handbrake.fr/appcast%s%s.xml' % (url_ctype,url_arch)
          self.url_appnote = 'https://handbrake.fr/appcast/%s.html' % (url_ntype)
++        self.version += '-%s-reloaded' % ('Git-Commit-Hash')
+ 
+         self.msg_end = '%s (%s)' % (self.name,repo.type)
+         self.fail = False
 -- 
 2.34.1
 
