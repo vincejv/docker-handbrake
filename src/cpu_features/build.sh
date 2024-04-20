@@ -3,8 +3,11 @@
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
+CPU_FEATURES_URL="${1:-}"
+MARCH="${2:-}"
+
 # Set same default compilation flags as abuild.
-export CFLAGS="-O3 -pipe -march=sandybridge -mtune=sandybridge -fomit-frame-pointer"
+export CFLAGS="-O3 -pipe -march=$MARCH -fomit-frame-pointer"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
@@ -17,8 +20,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 log() {
     echo ">>> $*"
 }
-
-CPU_FEATURES_URL="${1:-}"
 
 if [ -z "$CPU_FEATURES_URL" ]; then
     log "ERROR: URL missing."

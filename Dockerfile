@@ -48,7 +48,7 @@ ARG TARGETPLATFORM
 ARG CPU_FEATURES_URL
 COPY --from=xx / /
 COPY src/cpu_features /build
-RUN /build/build.sh "$CPU_FEATURES_URL"
+RUN /build/build.sh "$CPU_FEATURES_URL" "$MARCH"
 RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
@@ -149,4 +149,5 @@ LABEL \
       org.label-schema.description="Docker container for HandBrake" \
       org.label-schema.version="${DOCKER_IMAGE_VERSION:-}" \
       org.label-schema.vcs-url="https://github.com/jlesage/docker-handbrake" \
-      org.label-schema.schema-version="1.0"
+      org.label-schema.schema-version="1.0" \
+      org.opencontainers.image.description="Docker container for HandBrake"
