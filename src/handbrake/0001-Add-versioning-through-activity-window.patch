@@ -1,24 +1,25 @@
-From b70f1349a01102fc795a55f3627f0a5fe6a025c8 Mon Sep 17 00:00:00 2001
+From f0d08ae105028400dfad4a543384eb2627f5c7f5 Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Sat, 20 Apr 2024 00:35:18 +0800
+Date: Sat, 20 Apr 2024 23:32:16 +0800
 Subject: [PATCH] Add versioning through activity window
 
 ---
- make/configure.py | 1 +
- 1 file changed, 1 insertion(+)
+ make/configure.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/make/configure.py b/make/configure.py
-index b5a6468b9..b6d8c9f80 100644
+index b5a6468b9..cbff2d269 100644
 --- a/make/configure.py
 +++ b/make/configure.py
-@@ -968,6 +968,7 @@ class Project( Action ):
-             self.vmajor = int(vmajor)
-             self.vminor = int(vminor)
-             self.vpoint = int(vpoint)
-+            suffix = "Git-Commit-Hash"
-             if suffix:
-                 self.suffix = suffix
+@@ -1003,7 +1003,7 @@ class Project( Action ):
+                 url_ctype = '_unstable'
+                 url_ntype = 'unstable'
  
+-            self.build = time.strftime('%Y%m%d', now) + '00'
++            self.build = time.strftime('%Y%m%d', now) + '00-' + 'Git-Commit-Hash'
+             self.title = '%s %s (%s)' % (self.name,self.version,self.build)
+ 
+         self.url_appcast = 'https://handbrake.fr/appcast%s%s.xml' % (url_ctype,url_arch)
 -- 
 2.34.1
 
