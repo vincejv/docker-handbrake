@@ -479,6 +479,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-pres
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0002-Merge-global-motion-estimation-patch.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mapping_family-option-to-1-.patch
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 

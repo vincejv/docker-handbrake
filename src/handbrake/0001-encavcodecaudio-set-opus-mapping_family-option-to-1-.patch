@@ -1,0 +1,26 @@
+From 633057b6404f47b5bd1a0a056023196831407341 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Tue, 30 Apr 2024 03:09:09 +0800
+Subject: [PATCH] encavcodecaudio: set opus mapping_family option to 1 when
+ there are more than two channels
+
+---
+ libhb/encavcodecaudio.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/libhb/encavcodecaudio.c b/libhb/encavcodecaudio.c
+index b13f5ddb3..08667c36b 100644
+--- a/libhb/encavcodecaudio.c
++++ b/libhb/encavcodecaudio.c
+@@ -146,6 +146,8 @@ static int encavcodecaInit(hb_work_object_t *w, hb_job_t *job)
+             // audio, and will error out unless we translate the layout
+             if (channel_layout == AV_CH_LAYOUT_5POINT1)
+                 channel_layout  = AV_CH_LAYOUT_5POINT1_BACK;
++            if (hb_layout_get_discrete_channel_count(channel_layout) > 2)
++                av_dict_set(&av_opts, "mapping_family", "1", 0);
+             break;
+ 
+         default:
+-- 
+2.34.1
+
