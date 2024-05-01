@@ -373,7 +373,7 @@ log "Configuring Intel Media driver..."
 (
     mkdir /tmp/intel-media-driver/build && \
     cd /tmp/intel-media-driver/build && cmake \
-        # -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+        -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
@@ -407,7 +407,7 @@ log "Configuring Intel Media SDK..."
 (
     mkdir /tmp/MediaSDK/build && \
     cd /tmp/MediaSDK/build && cmake \
-        # -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+        -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
@@ -435,7 +435,7 @@ log "Configuring Intel oneVPL GPU Runtime..."
 (
     mkdir /tmp/oneVPL-intel-gpu/build && \
     cd /tmp/oneVPL-intel-gpu/build && cmake \
-        # -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+        -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \

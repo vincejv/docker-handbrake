@@ -48,7 +48,7 @@ ARG INTEL_MEDIA_DRIVER_URL
 ARG INTEL_MEDIA_SDK_URL
 ARG INTEL_ONEVPL_GPU_RUNTIME_URL
 
-# COPY --from=xx / /
+COPY --from=xx / /
 COPY src/handbrake /build
 RUN /build/build.sh \
     "$HANDBRAKE_VERSION" \
@@ -62,9 +62,9 @@ RUN /build/build.sh \
     "$INTEL_MEDIA_DRIVER_URL" \
     "$INTEL_MEDIA_SDK_URL" \
     "$INTEL_ONEVPL_GPU_RUNTIME_URL"
-# RUN xx-verify \
-#     /tmp/handbrake-install/usr/bin/ghb \
-#     /tmp/handbrake-install/usr/bin/HandBrakeCLI
+RUN xx-verify \
+    /tmp/handbrake-install/usr/bin/ghb \
+    /tmp/handbrake-install/usr/bin/HandBrakeCLI
 
 # Build cpu_features.
 FROM --platform=$BUILDPLATFORM ubuntu:jammy AS cpu_features
