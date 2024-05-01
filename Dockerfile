@@ -86,9 +86,9 @@ WORKDIR /tmp
 
 RUN \
     apt-get update && apt-get upgrade && \
-    apt install software-properties-common && \
+    apt install -y software-properties-common && \
     apt-add-repository contrib && \
-    apt-get install libdvd-pkg && \
+    apt-get install -y libdvd-pkg && \
     dpkg-reconfigure libdvd-pkg
 
 # Install dependencies.
