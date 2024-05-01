@@ -221,6 +221,7 @@ apt-get install -y \
     libfreetype-dev \
     libfribidi-dev \
     libharfbuzz-dev \
+    libx11-xcb-dev \
 
 # download install clang and llvm
 log "Installing clang and llvm"
