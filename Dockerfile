@@ -113,6 +113,7 @@ RUN \
         libvpx7 \
         # GPU, DVDs and BDs
         pciutils \
+        libdrm2 \
         # A font is needed.
         fonts-cantarell \
         # For main, big icons:

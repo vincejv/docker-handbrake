@@ -195,6 +195,7 @@ apt-get install -y \
     libxml2-dev \
     libnuma-dev \
     libturbojpeg0-dev \
+    libdrm-dev \
 
 # media libraries
 apt-get install -y \
@@ -337,8 +338,6 @@ make -C /tmp/x264 install
 log "Configuring libva..."
 (
     cd /tmp/libva && ./configure \
-        --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-        --host=$(xx-clang --print-target-triple) \
         --prefix=/usr \
         --localstatedir=/var \
         --enable-x11 \
@@ -358,9 +357,7 @@ make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 if [ "$(xx-info arch)" = "amd64" ]; then
     log "Configuring Intel VAAPI driver..."
     (
-        cd /tmp/intel-vaapi-driver && ./configure \
-            --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-            --host=$(xx-clang --print-target-triple) \
+        cd /tmp/intel-vaapi-driver && ./configure
     )
 
     log "Compiling Intel VAAPI driver..."
@@ -379,7 +376,6 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     (
         mkdir /tmp/intel-media-driver/build && \
         cd /tmp/intel-media-driver/build && cmake \
-            $(xx-clang --print-cmake-defines) \
             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
@@ -416,7 +412,6 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     (
         mkdir /tmp/MediaSDK/build && \
         cd /tmp/MediaSDK/build && cmake \
-            $(xx-clang --print-cmake-defines) \
             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
@@ -447,7 +442,6 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     (
         mkdir /tmp/oneVPL-intel-gpu/build && \
         cd /tmp/oneVPL-intel-gpu/build && cmake \
-            $(xx-clang --print-cmake-defines) \
             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
