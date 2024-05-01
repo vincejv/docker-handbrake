@@ -84,6 +84,7 @@ ARG DOCKER_IMAGE_VERSION
 # Define working directory.
 WORKDIR /tmp
 
+ARG DEBIAN_FRONTEND=noninteractive
 RUN \
     apt-get update && apt-get upgrade && \
     apt install -y software-properties-common && \
