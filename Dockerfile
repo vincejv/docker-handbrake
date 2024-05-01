@@ -114,7 +114,8 @@ RUN \
         # GPU, DVDs and BDs
         pciutils \
         libdrm2 \
-        libx11-xcb-dev \
+        libx11-xcb1 \
+        libxcb-dri3-0 \
         # A font is needed.
         fonts-cantarell \
         # For main, big icons:

@@ -222,6 +222,7 @@ apt-get install -y \
     libfribidi-dev \
     libharfbuzz-dev \
     libx11-xcb-dev \
+    libxcb-dri3-dev \
 
 # download install clang and llvm
 log "Installing clang and llvm"
