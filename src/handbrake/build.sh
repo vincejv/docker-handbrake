@@ -78,12 +78,12 @@ HANDBRAKE_DEBUG_MODE="${3:-}"
 MARCH="${4:-}"
 HB_BUILD="${5:-}"
 X264_URL="https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/x264-snapshot-20240314-3186.tar.gz"
-# LIBVA_URL="${4:-}"
-# INTEL_VAAPI_DRIVER_URL="${5:-}"
-# GMMLIB_URL="${6:-}"
-# INTEL_MEDIA_DRIVER_URL="${7:-}"
-# INTEL_MEDIA_SDK_URL="${8:-}"
-# INTEL_ONEVPL_GPU_RUNTIME_URL="${9:-}"
+LIBVA_URL="${6:-}"
+INTEL_VAAPI_DRIVER_URL="${7:-}"
+GMMLIB_URL="${8:-}"
+INTEL_MEDIA_DRIVER_URL="${9:-}"
+INTEL_MEDIA_SDK_URL="${10:-}"
+INTEL_ONEVPL_GPU_RUNTIME_URL="${11:-}"
 
 #
 # Compiler optimizations for toolchain build
@@ -111,40 +111,40 @@ if [ -z "$HANDBRAKE_DEBUG_MODE" ]; then
     exit 1
 fi
 
-#if [ -z "$X264_URL" ]; then
-#    log "ERROR: x264 URL missing."
-#    exit 1
-#fi
+if [ -z "$X264_URL" ]; then
+   log "ERROR: x264 URL missing."
+   exit 1
+fi
 
-# if [ -z "$LIBVA_URL" ]; then
-#     log "ERROR: libva URL missing."
-#     exit 1
-# fi
+if [ -z "$LIBVA_URL" ]; then
+    log "ERROR: libva URL missing."
+    exit 1
+fi
 
-# if [ -z "$INTEL_VAAPI_DRIVER_URL" ]; then
-#     log "ERROR: Intel VAAPI driver URL missing."
-#     exit 1
-# fi
+if [ -z "$INTEL_VAAPI_DRIVER_URL" ]; then
+    log "ERROR: Intel VAAPI driver URL missing."
+    exit 1
+fi
 
-# if [ -z "$GMMLIB_URL" ]; then
-#     log "ERROR: gmmlib URL missing."
-#     exit 1
-# fi
+if [ -z "$GMMLIB_URL" ]; then
+    log "ERROR: gmmlib URL missing."
+    exit 1
+fi
 
-# if [ -z "$INTEL_MEDIA_DRIVER_URL" ]; then
-#     log "ERROR: Intel Media driver URL missing."
-#     exit 1
-# fi
+if [ -z "$INTEL_MEDIA_DRIVER_URL" ]; then
+    log "ERROR: Intel Media driver URL missing."
+    exit 1
+fi
 
-# if [ -z "$INTEL_MEDIA_SDK_URL" ]; then
-#     log "ERROR: Intel Media SDK URL missing."
-#     exit 1
-# fi
+if [ -z "$INTEL_MEDIA_SDK_URL" ]; then
+    log "ERROR: Intel Media SDK URL missing."
+    exit 1
+fi
 
-# if [ -z "$INTEL_ONEVPL_GPU_RUNTIME_URL" ]; then
-#     log "ERROR: Intel OneVPL GPU Runtime URL missing."
-#     exit 1
-# fi
+if [ -z "$INTEL_ONEVPL_GPU_RUNTIME_URL" ]; then
+    log "ERROR: Intel OneVPL GPU Runtime URL missing."
+    exit 1
+fi
 
 #
 # Install required packages.
@@ -241,31 +241,31 @@ log "Downloading x264 sources..."
 mkdir /tmp/x264
 curl -# -L -f ${X264_URL} | tar xz --strip 1 -C /tmp/x264
 
-# log "Downloading libva sources..."
-# mkdir /tmp/libva
-# curl -# -L -f ${LIBVA_URL} | tar xj --strip 1 -C /tmp/libva
+log "Downloading libva sources..."
+mkdir /tmp/libva
+curl -# -L -f ${LIBVA_URL} | tar xj --strip 1 -C /tmp/libva
 
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     log "Downloading Intel VAAPI driver sources..."
-#     mkdir /tmp/intel-vaapi-driver
-#     curl -# -L -f ${INTEL_VAAPI_DRIVER_URL} | tar xj --strip 1 -C /tmp/intel-vaapi-driver
+if [ "$(xx-info arch)" = "amd64" ]; then
+    log "Downloading Intel VAAPI driver sources..."
+    mkdir /tmp/intel-vaapi-driver
+    curl -# -L -f ${INTEL_VAAPI_DRIVER_URL} | tar xj --strip 1 -C /tmp/intel-vaapi-driver
 
-#     log "Downloading gmmlib sources..."
-#     mkdir /tmp/gmmlib
-#     curl -# -L -f ${GMMLIB_URL} | tar xz --strip 1 -C /tmp/gmmlib
+    log "Downloading gmmlib sources..."
+    mkdir /tmp/gmmlib
+    curl -# -L -f ${GMMLIB_URL} | tar xz --strip 1 -C /tmp/gmmlib
 
-#     log "Downloading Intel Media driver sources..."
-#     mkdir /tmp/intel-media-driver
-#     curl -# -L -f ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C /tmp/intel-media-driver
+    log "Downloading Intel Media driver sources..."
+    mkdir /tmp/intel-media-driver
+    curl -# -L -f ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C /tmp/intel-media-driver
 
-#     log "Downloading Intel Media SDK sources..."
-#     mkdir /tmp/MediaSDK
-#     curl -# -L -f ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C /tmp/MediaSDK
+    log "Downloading Intel Media SDK sources..."
+    mkdir /tmp/MediaSDK
+    curl -# -L -f ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C /tmp/MediaSDK
 
-#     log "Downloading Intel OneVPL GPU Runtime sources..."
-#     mkdir /tmp/oneVPL-intel-gpu
-#     curl -# -L -f ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C /tmp/oneVPL-intel-gpu
-# fi
+    log "Downloading Intel OneVPL GPU Runtime sources..."
+    mkdir /tmp/oneVPL-intel-gpu
+    curl -# -L -f ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C /tmp/oneVPL-intel-gpu
+fi
 
 log "Downloading opus sources..."
 mkdir /tmp/opus
@@ -334,137 +334,137 @@ make -C /tmp/x264 -j$(nproc)
 log "Installing x264..."
 make -C /tmp/x264 install
 
-# log "Configuring libva..."
-# (
-#     cd /tmp/libva && ./configure \
-#         --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-#         --host=$(xx-clang --print-target-triple) \
-#         --prefix=/usr \
-#         --localstatedir=/var \
-#         --enable-x11 \
-#         --disable-glx \
-#         --disable-wayland \
-#         --disable-static \
-#         --enable-shared \
-# )
+log "Configuring libva..."
+(
+    cd /tmp/libva && ./configure \
+        --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
+        --host=$(xx-clang --print-target-triple) \
+        --prefix=/usr \
+        --localstatedir=/var \
+        --enable-x11 \
+        --disable-glx \
+        --disable-wayland \
+        --disable-static \
+        --enable-shared \
+)
 
-# log "Compiling libva..."
-# make -C /tmp/libva -j$(nproc)
+log "Compiling libva..."
+make -C /tmp/libva -j$(nproc)
 
-# log "Installing libva..."
-# make -C /tmp/libva install
-# make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
+log "Installing libva..."
+make -C /tmp/libva install
+make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     log "Configuring Intel VAAPI driver..."
-#     (
-#         cd /tmp/intel-vaapi-driver && ./configure \
-#             --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
-#             --host=$(xx-clang --print-target-triple) \
-#     )
+if [ "$(xx-info arch)" = "amd64" ]; then
+    log "Configuring Intel VAAPI driver..."
+    (
+        cd /tmp/intel-vaapi-driver && ./configure \
+            --build=$(TARGETPLATFORM= xx-clang --print-target-triple) \
+            --host=$(xx-clang --print-target-triple) \
+    )
 
-#     log "Compiling Intel VAAPI driver..."
-#     make -C /tmp/intel-vaapi-driver -j$(nproc)
+    log "Compiling Intel VAAPI driver..."
+    make -C /tmp/intel-vaapi-driver -j$(nproc)
 
-#     log "Installing Intel VAAPI driver..."
-#     make DESTDIR=/tmp/handbrake-install -C /tmp/intel-vaapi-driver install
-# fi
+    log "Installing Intel VAAPI driver..."
+    make DESTDIR=/tmp/handbrake-install -C /tmp/intel-vaapi-driver install
+fi
 
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     log "Patching Intel Media Driver..."
-#     patch -d /tmp/intel-media-driver -p1 < "$SCRIPT_DIR"/intel-media-driver-compile-fix.patch
-#     rm -rf /tmp/intel-media-driver/media_driver/*/ult
+if [ "$(xx-info arch)" = "amd64" ]; then
+    log "Patching Intel Media Driver..."
+    patch -d /tmp/intel-media-driver -p1 < "$SCRIPT_DIR"/intel-media-driver-compile-fix.patch
+    rm -rf /tmp/intel-media-driver/media_driver/*/ult
 
-#     log "Configuring Intel Media driver..."
-#     (
-#         mkdir /tmp/intel-media-driver/build && \
-#         cd /tmp/intel-media-driver/build && cmake \
-#             $(xx-clang --print-cmake-defines) \
-#             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-#             -DCMAKE_INSTALL_PREFIX=/usr \
-#             -DCMAKE_BUILD_TYPE=Release \
-#             -Wno-dev \
-#             -DBUILD_TYPE=Release \
-#             -DINSTALL_DRIVER_SYSCONF=OFF \
-#             -DMEDIA_RUN_TEST_SUITE=OFF \
-#             -DSKIP_GMM_CHECK=ON \
-#             ../
-#     )
+    log "Configuring Intel Media driver..."
+    (
+        mkdir /tmp/intel-media-driver/build && \
+        cd /tmp/intel-media-driver/build && cmake \
+            $(xx-clang --print-cmake-defines) \
+            -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_BUILD_TYPE=Release \
+            -Wno-dev \
+            -DBUILD_TYPE=Release \
+            -DINSTALL_DRIVER_SYSCONF=OFF \
+            -DMEDIA_RUN_TEST_SUITE=OFF \
+            -DSKIP_GMM_CHECK=ON \
+            ../
+    )
 
-#     log "Compiling Intel Media driver..."
-#     make -C /tmp/intel-media-driver/build  -j$(nproc)
+    log "Compiling Intel Media driver..."
+    make -C /tmp/intel-media-driver/build  -j$(nproc)
 
-#     log "Installing Intel Media driver..."
-#     make DESTDIR=/tmp/handbrake-install -C /tmp/intel-media-driver/build install
-# fi
+    log "Installing Intel Media driver..."
+    make DESTDIR=/tmp/handbrake-install -C /tmp/intel-media-driver/build install
+fi
 
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
-#         INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE
-#     else \
-#         INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG
-#     fi
+if [ "$(xx-info arch)" = "amd64" ]; then
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
+        INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE
+    else \
+        INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG
+    fi
 
-#     log "Patching Intel Media SDK..."
-#     patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-debug-no-assert.patch
+    log "Patching Intel Media SDK..."
+    patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-debug-no-assert.patch
 
-#     log "Configuring Intel Media SDK..."
-#     (
-#         mkdir /tmp/MediaSDK/build && \
-#         cd /tmp/MediaSDK/build && cmake \
-#             $(xx-clang --print-cmake-defines) \
-#             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-#             -DCMAKE_INSTALL_PREFIX=/usr \
-#             -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
-#             -DENABLE_OPENCL=OFF \
-#             -DENABLE_X11_DRI3=OFF \
-#             -DENABLE_WAYLAND=OFF \
-#             -DBUILD_DISPATCHER=ON \
-#             -DENABLE_ITT=OFF \
-#             -DENABLE_TEXTLOG=OFF \
-#             -DENABLE_STAT=OFF \
-#             -DBUILD_SAMPLES=OFF \
-#             ../
-#     )
+    log "Configuring Intel Media SDK..."
+    (
+        mkdir /tmp/MediaSDK/build && \
+        cd /tmp/MediaSDK/build && cmake \
+            $(xx-clang --print-cmake-defines) \
+            -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
+            -DENABLE_OPENCL=OFF \
+            -DENABLE_X11_DRI3=OFF \
+            -DENABLE_WAYLAND=OFF \
+            -DBUILD_DISPATCHER=ON \
+            -DENABLE_ITT=OFF \
+            -DENABLE_TEXTLOG=OFF \
+            -DENABLE_STAT=OFF \
+            -DBUILD_SAMPLES=OFF \
+            ../
+    )
 
-#     log "Compiling Intel Media SDK..."
-#     make -C /tmp/MediaSDK/build -j$(nproc)
+    log "Compiling Intel Media SDK..."
+    make -C /tmp/MediaSDK/build -j$(nproc)
 
-#     log "Installing Intel Media SDK..."
-#     make DESTDIR=/tmp/handbrake-install -C /tmp/MediaSDK/build install
-# fi
+    log "Installing Intel Media SDK..."
+    make DESTDIR=/tmp/handbrake-install -C /tmp/MediaSDK/build install
+fi
 
-# if [ "$(xx-info arch)" = "amd64" ]; then
-#     log "Configuring Intel oneVPL GPU Runtime..."
-#     (
-#         mkdir /tmp/oneVPL-intel-gpu/build && \
-#         cd /tmp/oneVPL-intel-gpu/build && cmake \
-#             $(xx-clang --print-cmake-defines) \
-#             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
-#             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-#             -DCMAKE_BUILD_TYPE=Release \
-#             -DCMAKE_INSTALL_PREFIX=/usr \
-#             -DCMAKE_INSTALL_LIBDIR=lib \
-#             ../
-#     )
+if [ "$(xx-info arch)" = "amd64" ]; then
+    log "Configuring Intel oneVPL GPU Runtime..."
+    (
+        mkdir /tmp/oneVPL-intel-gpu/build && \
+        cd /tmp/oneVPL-intel-gpu/build && cmake \
+            $(xx-clang --print-cmake-defines) \
+            -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            ../
+    )
 
-#     log "Compiling Intel oneVPL GPU Runtime..."
-#     make -C /tmp/oneVPL-intel-gpu/build -j$(nproc)
+    log "Compiling Intel oneVPL GPU Runtime..."
+    make -C /tmp/oneVPL-intel-gpu/build -j$(nproc)
 
-#     log "Installing Intel oneVPL GPU Runtime..."
-#     make DESTDIR=/tmp/handbrake-install -C /tmp/oneVPL-intel-gpu/build install
-# fi
+    log "Installing Intel oneVPL GPU Runtime..."
+    make DESTDIR=/tmp/handbrake-install -C /tmp/oneVPL-intel-gpu/build install
+fi
 
 log "Patching HandBrake..."
 # if xx-info is-cross; then
