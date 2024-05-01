@@ -86,7 +86,7 @@ WORKDIR /tmp
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN \
-    apt-get update && apt-get upgrade && \
+    apt-get update && \
     apt install -y software-properties-common && \
     apt-add-repository contrib && \
     apt-get install -y libdvd-pkg && \
