@@ -84,6 +84,13 @@ ARG DOCKER_IMAGE_VERSION
 # Define working directory.
 WORKDIR /tmp
 
+RUN \
+    apt-get update && apt-get upgrade && \
+    apt install software-properties-common && \
+    apt-add-repository contrib && \
+    apt-get install libdvd-pkg && \
+    dpkg-reconfigure libdvd-pkg
+
 # Install dependencies.
 RUN \
     add-pkg \
@@ -107,7 +114,6 @@ RUN \
         libvpx7 \
         # GPU, DVDs and BDs
         pciutils \
-        libdvdcss \
         # A font is needed.
         fonts-cantarell \
         # For main, big icons:
