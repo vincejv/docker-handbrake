@@ -489,7 +489,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity
 
 log "Configuring HandBrake..."
 (
-    CONF_FLAGS="--disable-qsv --disable-nvenc"
+    CONF_FLAGS="--enable-qsv"
 
     # if xx-info is-cross; then
     #     CONF_FLAGS="$CONF_FLAGS --cross $(xx-info)"
