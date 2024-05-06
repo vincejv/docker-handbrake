@@ -1,25 +1,44 @@
-From 501f929e2b2be6d20088cc28f4d32226f7fc6922 Mon Sep 17 00:00:00 2001
+From 542e4792a09884f203789be2a41db2eb04d8b2bf Mon Sep 17 00:00:00 2001
 From: Vince JV <1276544+vincejv@users.noreply.github.com>
-Date: Mon, 6 May 2024 18:48:41 +0800
-Subject: [PATCH] Bump version to `2311fba`
+Date: Mon, 6 May 2024 19:03:55 +0800
+Subject: [PATCH] Bump svt-av1-psy version
 
 ---
- CMakeLists.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../svt-av1/A07-Bump-svt-av1-version.patch    | 25 +++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 contrib/svt-av1/A07-Bump-svt-av1-version.patch
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 29e6c85..ca1acba 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -19,7 +19,7 @@ endif()
- project(svt-av1 VERSION 2.0.0
-     LANGUAGES C CXX)
- 
--set(VERSION_TAG "-c31e160")
-+set(VERSION_TAG "-2311fba")
- 
- if(POLICY CMP0063)
-   cmake_policy(SET CMP0063 NEW)
+diff --git a/contrib/svt-av1/A07-Bump-svt-av1-version.patch b/contrib/svt-av1/A07-Bump-svt-av1-version.patch
+new file mode 100644
+index 000000000..392400fd4
+--- /dev/null
++++ b/contrib/svt-av1/A07-Bump-svt-av1-version.patch
+@@ -0,0 +1,25 @@
++From 501f929e2b2be6d20088cc28f4d32226f7fc6922 Mon Sep 17 00:00:00 2001
++From: Vince JV <1276544+vincejv@users.noreply.github.com>
++Date: Mon, 6 May 2024 18:48:41 +0800
++Subject: [PATCH] Bump version to `2311fba`
++
++---
++ CMakeLists.txt | 2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++diff --git a/CMakeLists.txt b/CMakeLists.txt
++index 29e6c85..ca1acba 100644
++--- a/CMakeLists.txt
+++++ b/CMakeLists.txt
++@@ -19,7 +19,7 @@ endif()
++ project(svt-av1 VERSION 2.0.0
++     LANGUAGES C CXX)
++ 
++-set(VERSION_TAG "-c31e160")
+++set(VERSION_TAG "-2311fba")
++ 
++ if(POLICY CMP0063)
++   cmake_policy(SET CMP0063 NEW)
++-- 
++2.34.1
++
 -- 
 2.34.1
 
