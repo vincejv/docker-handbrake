@@ -219,6 +219,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-pres
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mapping_family-option-to-1-.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-libhb-refactor-Dolby-Vision-level-selection-code-def.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-SVT-AV1-hb-mainline-sync.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0002-libhb-convert-dolby-vision-rpus-to-t35-obu-payloads-.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0003-contrib-fix-a-crash-that-happens-when-multiple-metad.patch
