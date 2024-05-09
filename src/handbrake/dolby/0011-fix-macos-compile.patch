@@ -1,0 +1,25 @@
+From 44a0d401d731bdf36240f7baab74b4209a01da59 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Fri, 10 May 2024 07:41:15 +0800
+Subject: [PATCH] fix macos compile
+
+---
+ libhb/platform/macosx/encvt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libhb/platform/macosx/encvt.c b/libhb/platform/macosx/encvt.c
+index 7fded81d7..301531491 100644
+--- a/libhb/platform/macosx/encvt.c
++++ b/libhb/platform/macosx/encvt.c
+@@ -1457,7 +1457,7 @@ int encvt_init(hb_work_object_t *w, hb_job_t *job)
+         // set the max value for the current level or guess one
+         if (pv->settings.vbv.maxrate == 0 || pv->settings.vbv.bufsize == 0)
+         {
+-            int max_rate = hb_dovi_max_rate(job->width, pps, bitrate * 1.5, 0, 0);
++            int max_rate = hb_dovi_max_rate(job->vcodec, job->width, pps, bitrate * 1.5, 0, 0);
+             pv->settings.vbv.maxrate = max_rate * 1000;
+             pv->settings.vbv.bufsize = max_rate * 1000;
+         }
+-- 
+2.34.1
+

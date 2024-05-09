@@ -67,10 +67,10 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 # Set same default compilation flags as abuild.
-export CFLAGS="-pipe -fomit-frame-pointer"
-export CXXFLAGS="$CFLAGS"
-export CPPFLAGS="$CFLAGS"
-export LDFLAGS="-Wl,--strip-all -Wl,--as-needed"
+# export CFLAGS="-pipe -fomit-frame-pointer"
+# export CXXFLAGS="$CFLAGS"
+# export CPPFLAGS="$CFLAGS"
+# export LDFLAGS="-Wl"
 
 # export CC=clang
 # export CXX=clang++
@@ -102,87 +102,6 @@ if [ -z "$HANDBRAKE_DEBUG_MODE" ]; then
     exit 1
 fi
 
-#
-# Install required packages.
-#
-apt-get update && \
-apt-get install -y \
-    curl \
-    binutils \
-    git \
-    make \
-    cmake \
-    pax \
-    pkg-config \
-    autoconf \
-    automake \
-    yasm \
-    m4 \
-    patch \
-    coreutils \
-    tar \
-    liblzma-dev \
-    libbz2-dev \
-    file \
-    python-is-python3 \
-    intltool \
-    diffutils \
-    bash \
-    nasm \
-    meson \
-    gettext \
-    libglib2.0-dev \
-
-apt-get install -y \
-    gcc \
-    build-essential \
-    ninja-build \
-    patch \
-    libssl-dev \
-
-# misc libraries
-apt-get install -y \
-    libtool \
-    libtool-bin \
-    libjansson-dev \
-    libxml2-dev \
-    libnuma-dev \
-    libturbojpeg0-dev \
-
-# media libraries
-apt-get install -y \
-    libsamplerate0-dev \
-    libass-dev \
-
-# media codecs
-apt-get install -y \
-    libogg-dev \
-    libtheora-dev \
-    libmp3lame-dev \
-    libvorbis-dev \
-    libspeex-dev \
-    libvpx-dev \
-
-# gtk
-apt-get install -y \
-    libgtk-3-dev \
-    libdbus-glib-1-dev \
-    libnotify-dev \
-    libgudev-1.0-dev \
-    libfontconfig-dev \
-    libfreetype-dev \
-    libfribidi-dev \
-    libharfbuzz-dev \
-
-# install rust, rustup, cargo-c
-log "Installing rust"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
-export PATH="/root/.cargo/bin:${PATH}"
-cargo install -j$(nproc) cargo-c
-
-log "Installing rust toolchain for Windows"
-rustup target add x86_64-pc-windows-gnu
-
 log "Downloading HandBrake sources..."
 if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then
     # Sources from git for nightly builds.
@@ -198,13 +117,13 @@ fi
 # Compile HandBrake.
 #
 
-if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
-    CMAKE_BUILD_TYPE=Release
-else
-    CMAKE_BUILD_TYPE=Debug
-    # Do not strip symbols.
-    LDFLAGS=
-fi
+# if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then
+#     CMAKE_BUILD_TYPE=Release
+# else
+#     CMAKE_BUILD_TYPE=Debug
+#     # Do not strip symbols.
+#     LDFLAGS=
+# fi
 
 log "Patching HandBrake..."
 # if xx-info is-cross; then
@@ -230,9 +149,11 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0007-h265-Dovi-compile-error.p
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0008-libhb-refactor-how-extradata-is-stored-use-a-dynamic.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0009-Dovi-compile-fix-2.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0010-libdovi-bump-to-3.3.0.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0011-fix-macos-compile.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0012-Import-dovi-in-encvt.patch
 # Dolby vision patches -- END
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string.patch
-sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
+gsed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 
 # # Create the meson cross compile config file.
@@ -253,28 +174,12 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity
 # EOF
 # fi
 
-log "Setup toolchain for windows"
-wget https://github.com/bradleysepos/mingw-w64-build/releases/download/10.0.0/mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz
-SHA=$(sha1sum mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz)
-EXPECTED="f7250d140a72bdfdda2d4cd01d84e9a3938132b1  mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz"
-if [ "$SHA" = "$EXPECTED" ];
-then
-    echo "Toolchain Verified. Extracting ..."
-    mkdir /tmp/toolchains/
-    tar xzf mingw-w64-toolchain-10.0.0-msvcrt-linux-x86_64.tar.gz --strip-components=1 -C /tmp/toolchains
-    log "Toolchains directory"
-    ls -alh /tmp/toolchains
-else
-    echo "Toolchain Verification FAILED. Exiting!"
-    return -1
-fi
-
 # Set compiler optimizations
-export CFLAGS="$CFLAGS -march=$MARCH"
-export CXXFLAGS="$CFLAGS"
-export CPPFLAGS="$CFLAGS"
+# export CFLAGS="$CFLAGS -march=$MARCH"
+# export CXXFLAGS="$CFLAGS"
+# export CPPFLAGS="$CFLAGS"
 
-export PATH="/tmp/toolchains/mingw-w64-x86_64/bin:${PATH}"
+# export PATH="/tmp/toolchains/mingw-w64-x86_64/bin:${PATH}"
 
 log "Configuring HandBrake..."
 (
@@ -285,25 +190,32 @@ log "Configuring HandBrake..."
     # fi
 
     cd /tmp/handbrake && ./configure \
-        --cross=x86_64-w64-mingw32 \
         --verbose \
-        --prefix=/usr \
-        --build=build \
         --debug=$HANDBRAKE_DEBUG_MODE \
         --enable-fdk-aac \
         --enable-x265 \
         --enable-libdovi \
         --no-harden \
         $CONF_FLAGS \
+
+    # cd /tmp/handbrake && ./configure
 )
 
+cd /tmp/handbrake/build
+
 log "Compiling HandBrake..."
-make -C /tmp/handbrake/build -j$(nproc)
+make ub
+# && make pkg.create
+# make -C /tmp/handbrake/build -j$(sysctl -n hw.activecpu)
 
-log "Fix permissions..."
-chown -R runner /tmp/handbrake/build
+# log "Fix permissions..."
+# chown -R runner /tmp/handbrake/build
 
-# log "Installing HandBrake..."
+log "Packaging HandBrake..."
+# cd /tmp/handbrake/build
+# make -C /tmp/handbrake/build pkg.create
+
+# make --directory=/tmp/handbrake/build/pkg install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
@@ -318,5 +230,5 @@ chown -R runner /tmp/handbrake/build
 #     /tmp/handbrake-install/usr/share/metainfo \
 #     /tmp/handbrake-install/usr/share/applications \
 
-# log "Handbrake install content:"
+#log "Handbrake install content:"
 # find /tmp/handbrake-install

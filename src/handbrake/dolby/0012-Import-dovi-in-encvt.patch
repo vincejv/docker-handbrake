@@ -1,0 +1,24 @@
+From 99a079da7db6c0fc4908b0a1545c187592bcfdfb Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Fri, 10 May 2024 08:10:42 +0800
+Subject: [PATCH] Import dovi in encvt
+
+---
+ libhb/platform/macosx/encvt.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libhb/platform/macosx/encvt.c b/libhb/platform/macosx/encvt.c
+index 301531491..53c3f5267 100644
+--- a/libhb/platform/macosx/encvt.c
++++ b/libhb/platform/macosx/encvt.c
+@@ -13,6 +13,7 @@
+ #include "libavutil/avutil.h"
+ 
+ #include "handbrake/handbrake.h"
++#include "handbrake/dovi_common.h"
+ #include "handbrake/hdr10plus.h"
+ #include "handbrake/hbffmpeg.h"
+ #include "handbrake/nal_units.h"
+-- 
+2.34.1
+

@@ -2,9 +2,9 @@ name: Build and push to Docker Hub
 
 on:
   push:
-    branches: [ "windows" ]
+    branches: [ "mac" ]
   pull_request:
-    branches: [ "windows" ]
+    branches: [ "mac" ]
 
 env:
   HANDBRAKE_VERSION: 1.7.3
@@ -30,71 +30,71 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     needs:
       - versioning
     permissions:
       contents: write
-    strategy:
-      fail-fast: true
-      matrix:
-        platform:
-          - linux/amd64
-        march:
-          - sandybridge
-          - ivybridge
-          - haswell
-          - broadwell
-          - alderlake
-          - raptorlake
-          - rocketlake
-          - skylake
-          - x86-64-v2
-          - x86-64-v3
-          - x86-64-v4
-          - x86-64
-          - znver1
-          - znver2
-          - znver3
-          - znver4
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Retrieve commit
         id: commit
         uses: prompt/actions-commit-hash@v3
+      - name: Install GNU sed
+        run: |
+          brew update
+          brew install gnu-sed
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.3'
+      - name: Toolchain Cache
+        id: mac-toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/mac-toolchain
+          key: ${{ runner.os }}-${{ runner.arch }}-toolchain-${{ hashFiles('**/scripts/mac-toolchain-build') }}
+      - name: Cargo-C Toolchain Cache
+        id: mac-cargo-c-toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-capi
+            ~/.cargo/bin/cargo-cbuild
+            ~/.cargo/bin/cargo-cinstall
+          key: ${{ runner.os }}-${{ runner.arch }}-cargo-c-toolchain
+      - name: Setup Environment
+        run: |
+          echo ~/mac-toolchain/bin >> $GITHUB_PATH
+          rustup target add aarch64-apple-darwin
+      - name: Setup Toolchain
+        if: steps.mac-toolchain.outputs.cache-hit != 'true'
+        run: |
+          pip install setuptools
+          scripts/mac-toolchain-build ~/mac-toolchain
+      - name: Setup Cargo-C Toolchain
+        if: steps.mac-cargo-c-toolchain.outputs.cache-hit != 'true'
+        run: |
+          cargo install cargo-c
       - name: Build handbrake
         run: |
-          sudo src/handbrake/build.sh \
+          src/handbrake/build.sh \
             ${{ env.HANDBRAKE_VERSION }} \
             https://github.com/HandBrake/HandBrake/releases/download/${{ env.HANDBRAKE_VERSION }}/HandBrake-${{ env.HANDBRAKE_VERSION }}-source.tar.bz2 \
             ${{ env.HANDBRAKE_DEBUG_MODE }} \
-            ${{ matrix.march }} \
             ${{ steps.commit.outputs.short }}
-      - name: Upload as dll artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: win64-hb-dll-${{ matrix.march }}
-          path: /tmp/handbrake/build/libhb/hb.dll
-          if-no-files-found: error
-          retention-days: 90
-      - name: Upload as exe artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: win64-hb-cli-${{ matrix.march }}
-          path: /tmp/handbrake/build/HandBrakeCLI.exe
-          if-no-files-found: error
-          retention-days: 90
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /tmp/handbrake/build/libhb/hb.dll
-          asset_name: hb-${{ matrix.march }}.dll
-          body: ${{ needs.versioning.outputs.changelog }}
-          tag: ${{ needs.versioning.outputs.new_tag }}
-          release_name: Release ${{ needs.versioning.outputs.new_tag }}-${{ needs.versioning.outputs.commit }}
-          target_commit: ${{ github.ref_name }}
+      # - name: Upload as mac package artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: mac-pkg
+      #     path: /tmp/handbrake/build/pkg
+      #     if-no-files-found: error
+      #     retention-days: 90
+      # - name: Upload binaries to release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "/tmp/handbrake/build/pkg"
+      #     makeLatest: false
 
   # merge:
   #   runs-on: ubuntu-latest
