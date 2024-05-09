@@ -1,0 +1,887 @@
+From 8de4c6054a472a7f560bafbb23c3e01029be71ab Mon Sep 17 00:00:00 2001
+From: Damiano Galassi <damiog@gmail.com>
+Date: Tue, 26 Mar 2024 11:54:30 +0100
+Subject: [PATCH] libhb: convert dolby vision rpus to t35 obu payloads and pass
+ them to svt-av1.
+
+---
+ libhb/dovi_common.c           | 127 ++++++++++++-
+ libhb/encsvtav1.c             |  32 ++++
+ libhb/encx265.c               |   7 +-
+ libhb/extradata.c             | 341 ++++++++++++++++++++++++++++++++++
+ libhb/handbrake/dovi_common.h |  26 ---
+ libhb/handbrake/extradata.h   |  30 +++
+ libhb/handbrake/h265_common.h |  28 ---
+ libhb/handbrake/rpu.h         |  19 ++
+ libhb/rpu.c                   |  27 ++-
+ libhb/work.c                  |  29 ++-
+ 10 files changed, 588 insertions(+), 78 deletions(-)
+ create mode 100644 libhb/extradata.c
+ create mode 100644 libhb/handbrake/extradata.h
+ create mode 100644 libhb/handbrake/rpu.h
+
+diff --git a/libhb/dovi_common.c b/libhb/dovi_common.c
+index a70c2d20c..660dd916f 100644
+--- a/libhb/dovi_common.c
++++ b/libhb/dovi_common.c
+@@ -10,20 +10,133 @@
+ #include <string.h>
+ #include "handbrake/dovi_common.h"
+ #include "handbrake/h265_common.h"
++#include "handbrake/av1_common.h"
++#include "handbrake/common.h"
+ 
+-int hb_dovi_max_rate(int width, int pps, int bitrate, int level, int high_tier)
++static struct
++{
++    const uint32_t id;
++    const uint32_t max_pps;
++    const uint32_t max_width;
++    const uint32_t max_bitrate_main_tier;
++    const uint32_t max_bitrate_high_tier;
++}
++hb_dovi_levels[] =
++{
++    { 1,  22118400,   1280, 20,  50  },
++    { 2,  27648000,   1280, 20,  50  },
++    { 3,  49766400,   1920, 20,  70  },
++    { 4,  62208000,   2560, 20,  70  },
++    { 5,  124416000,  3840, 20,  70  },
++    { 6,  199065600,  3840, 25,  130 },
++    { 7,  248832000,  3840, 25,  130 },
++    { 8,  398131200,  3840, 40,  130 },
++    { 9,  497664000,  3840, 40,  130 },
++    { 10, 995328000,  3840, 60,  240 },
++    { 11, 995328000,  7680, 60,  240 },
++    { 12, 1990656000, 7680, 120, 480 },
++    { 13, 3981312000, 7680, 240, 800 },
++    { 0, 0, 0, 0, 0 }
++};
++
++static struct
++{
++    const char *level;
++    const int level_id;
++    const uint32_t max_luma_sample_rate;
++    const uint32_t max_luma_picture_size;
++    const uint32_t max_bitrate_main_tier;
++    const uint32_t max_bitrate_high_tier;
++}
++
++hb_h265_level_limits[] =
++{
++    { "1.0", 10, 552960,     36864,    128,    128    },
++    { "2.0", 20, 3686400,    122880,   1500,   1500   },
++    { "2.1", 31, 7372800,    245760,   3000,   3000   },
++    { "3.0", 30, 16588800,   552960,   6000,   6000   },
++    { "3.1", 31, 33177600,   983040,   10000,  10000  },
++    { "4.0", 40, 66846720,   2228224,  12000,  30000  },
++    { "4.1", 41, 133693440,  2228224,  20000,  50000  },
++    { "5.0", 50, 267386880,  8912896,  25000,  100000 },
++    { "5.1", 51, 534773760,  8912896,  40000,  160000 },
++    { "5.2", 52, 1069547520, 8912896,  60000,  240000 },
++    { "6.0", 60, 1069547520, 35651584, 60000,  240000 },
++    { "6.1", 61, 2139095040, 35651584, 120000, 480000 },
++    { "6.2", 62, 4278190080, 35651584, 240000, 800000 },
++    { NULL,  0,  0,          0,        0,      0      }
++};
++
++// From AV1 Annex A
++static struct
++{
++    const char *level;
++    const int level_id;
++    const uint32_t max_pic_size;
++    const uint32_t max_h_size;
++    const uint32_t max_v_size;
++    const uint32_t max_decode_rate;
++    const uint32_t max_bitrate_main_tier;
++    const uint32_t max_bitrate_high_tier;
++}
++hb_av1_level_limits[] =
++{
++    { "2.0", 20,   147456,  2048, 1152,    4423680,   1500,   1500 },
++    { "2.1", 31,   278784,  2816, 1584,    8363520,   3000,   3000 },
++    { "2.2", 31,   278784,  2816, 3000,    8363520,   3000,   3000 },
++    { "2.3", 31,   278784,  2816, 3000,    8363520,   3000,   3000 },
++    { "3.0", 30,   665856,  4352, 2448,   19975680,   6000,   6000 },
++    { "3.1", 31,   665856,  5504, 3096,   31950720,  10000,  10000 },
++    { "3.2", 31,   665856,  5504, 3096,   31950720,  10000,  10000 },
++    { "3.3", 31,   665856,  5504, 3096,   31950720,  10000,  10000 },
++    { "4.0", 40,  2359296,  6144, 3456,   70778880,  12000,  30000 },
++    { "4.1", 40,  2359296,  6144, 3456,  141557760,  20000,  50000 },
++    { "4.2", 40,  2359296,  6144, 3456,  141557760,  20000,  50000 },
++    { "4.3", 40,  2359296,  6144, 3456,  141557760,  20000,  50000 },
++    { "5.0", 50,  8912896,  8192, 4352,  267386880,  30000, 100000 },
++    { "5.1", 51,  8912896,  8192, 4352,  534773760,  40000, 160000 },
++    { "5.2", 52,  8912896,  8192, 4352, 1069547520,  60000, 240000 },
++    { "5.3", 52,  8912896,  8192, 4352, 1069547520,  60000, 240000 },
++    { "6.0", 60, 35651584, 16384, 8704, 1069547520,  60000, 240000 },
++    { "6.1", 61, 35651584, 16384, 8704, 2139095040, 100000, 480000 },
++    { "6.2", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    { "6.3", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    { "7.0", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    { "7.1", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    { "7.2", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    { "7.3", 62, 35651584, 16384, 8704, 4278190080, 160000, 800000 },
++    {  NULL,  0,        0,     0,   0,           0,      0,      0 }
++};
++
++int hb_dovi_max_rate(int vcodec, int width, int pps, int bitrate, int level, int high_tier)
+ {
+     int max_rate = 0;
+     if (level)
+     {
+-        for (int i = 0; hb_h265_level_limits[i].level_id != 0; i++)
++        if (vcodec & HB_VCODEC_H265_MASK)
+         {
+-            if (hb_h265_level_limits[i].level_id == level)
++            for (int i = 0; hb_h265_level_limits[i].level_id != 0; i++)
+             {
+-                max_rate = high_tier ?
+-                                    hb_h265_level_limits[i].max_bitrate_high_tier :
+-                                    hb_h265_level_limits[i].max_bitrate_main_tier;
+-                break;
++                if (hb_h265_level_limits[i].level_id == level)
++                {
++                    max_rate = high_tier ?
++                    hb_h265_level_limits[i].max_bitrate_high_tier :
++                    hb_h265_level_limits[i].max_bitrate_main_tier;
++                    break;
++                }
++            }
++        }
++        else if (vcodec & HB_VCODEC_AV1_MASK)
++        {
++            for (int i = 0; hb_av1_level_limits[i].level_id != 0; i++)
++            {
++                if (i == level)
++                {
++                    max_rate = high_tier ?
++                    hb_av1_level_limits[i].max_bitrate_high_tier :
++                    hb_av1_level_limits[i].max_bitrate_main_tier;
++                    break;
++                }
+             }
+         }
+     }
+diff --git a/libhb/encsvtav1.c b/libhb/encsvtav1.c
+index c6866d695..74ac5f235 100644
+--- a/libhb/encsvtav1.c
++++ b/libhb/encsvtav1.c
+@@ -12,6 +12,9 @@
+ #include "handbrake/hb_dict.h"
+ #include "handbrake/av1_common.h"
+ #include "handbrake/hdr10plus.h"
++#include "handbrake/dovi_common.h"
++#include "handbrake/extradata.h"
++
+ #include "libavutil/avutil.h"
+ #include "svt-av1/EbSvtAv1ErrorCodes.h"
+ #include "svt-av1/EbSvtAv1Enc.h"
+@@ -358,6 +361,29 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+     w->config->extradata.length = headerPtr->n_filled_len;
+     memcpy(w->config->extradata.bytes, headerPtr->p_buffer, headerPtr->n_filled_len);
+ 
++    // Update and set Dolby Vision level
++    if (job->passthru_dynamic_hdr_metadata & DOVI)
++    {
++        int level_idx, high_tier;
++        hb_parse_av1_extradata(*w->extradata, &level_idx, &high_tier);
++
++        int pps = (double)job->width * job->height * (job->vrate.num / job->vrate.den);
++        int bitrate = job->vquality == HB_INVALID_VIDEO_QUALITY ? job->vbitrate : -1;
++
++        // Dolby Vision requires VBV settings to enable HRD
++        // but SVT-AV1 supports max-bit-rate only in CFR mode
++        // so that the Dolby Vision level to something comparable
++        // to the current AV1 level
++        if (param->max_bit_rate == 0)
++        {
++            int max_rate = hb_dovi_max_rate(job->vcodec, job->width, pps, bitrate,
++                                            level_idx, high_tier);
++            param->max_bit_rate = max_rate * 1000;
++        }
++
++        job->dovi.dv_level = hb_dovi_level(job->width, pps, param->max_bit_rate / 1000, high_tier);
++    }
++
+     svt_ret = svt_av1_enc_stream_header_release(headerPtr);
+     if (svt_ret != EB_ErrorNone)
+     {
+@@ -508,6 +534,12 @@ static int send(hb_work_object_t *w, hb_buffer_t *in)
+                 svt_add_metadata(headerPtr, EB_AV1_METADATA_TYPE_ITUT_T35, payload, playload_size);
+                 av_freep(&payload);
+             }
++            else if (job->passthru_dynamic_hdr_metadata & DOVI &&
++                     side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER)
++            {
++                svt_add_metadata(headerPtr, EB_AV1_METADATA_TYPE_ITUT_T35, side_data->data, side_data->size);
++            }
++
+         }
+     }
+ 
+diff --git a/libhb/encx265.c b/libhb/encx265.c
+index 761630db0..0f1c9c152 100644
+--- a/libhb/encx265.c
++++ b/libhb/encx265.c
+@@ -512,9 +512,10 @@ int encx265Init(hb_work_object_t *w, hb_job_t *job)
+         // set the max value for the current level or guess one
+         if (param->rc.vbvMaxBitrate == 0 || param->rc.vbvBufferSize == 0)
+         {
+-            int max_rate = hb_dovi_max_rate(job->width, pps, bitrate, param->levelIdc, param->bHighTier);
+-            param->rc.vbvMaxBitrate = max_rate * 1000;
+-            param->rc.vbvBufferSize = max_rate * 1000;
++            int max_rate = hb_dovi_max_rate(job->vcodec, job->width, pps, bitrate,
++                                            param->levelIdc, param->bHighTier);
++            param->rc.vbvMaxBitrate = max_rate;
++            param->rc.vbvBufferSize = max_rate;
+         }
+ 
+         job->dovi.dv_level = hb_dovi_level(job->width, pps, param->rc.vbvMaxBitrate, param->bHighTier);
+diff --git a/libhb/extradata.c b/libhb/extradata.c
+new file mode 100644
+index 000000000..97c8c2b59
+--- /dev/null
++++ b/libhb/extradata.c
+@@ -0,0 +1,341 @@
++/* extradata.c
++
++   Copyright (c) 2003-2024 HandBrake Team
++   This file is part of the HandBrake source code
++   Homepage: <http://handbrake.fr/>.
++   It may be used under the terms of the GNU General Public License v2.
++   For full terms see the file COPYING file or visit http://www.gnu.org/licenses/gpl-2.0.html
++ */
++
++#include "handbrake/extradata.h"
++#include "handbrake/bitstream.h"
++#include "libavutil/intreadwrite.h"
++#include <ogg/ogg.h>
++
++int hb_set_extradata(hb_data_t **extradata, const uint8_t *bytes, size_t length)
++{
++    hb_data_close(extradata);
++
++    if (length > 0)
++    {
++        *extradata = hb_data_init(length);
++        if (*extradata == NULL)
++        {
++            hb_error("extradata: malloc failure");
++            return 1;
++        }
++        memcpy((*extradata)->bytes, bytes, length);
++    }
++    return 0;
++}
++
++int hb_set_text_extradata(hb_data_t **extradata, const uint8_t *bytes, size_t length)
++{
++    hb_data_close(extradata);
++
++    if (length > 0)
++    {
++        *extradata = hb_data_init(length + 1);
++        if (*extradata == NULL)
++        {
++            hb_error("extradata: malloc failure");
++            return 1;
++        }
++        memcpy((*extradata)->bytes, bytes, length);
++        (*extradata)->bytes[length] = 0;
++    }
++    return 0;
++}
++
++int hb_set_ssa_extradata(hb_data_t **extradata, const char *font, int fs, int w, int h)
++{
++    hb_data_close(extradata);
++
++    char *header = NULL;
++    float shadow_size = fs / 36.0;
++    float outline_size = fs / 30.0;
++
++    char *shadow_size_string = hb_strdup_printf("%.2f", shadow_size);
++    hb_str_from_locale(shadow_size_string);
++
++    char *outline_size_string = hb_strdup_printf("%.2f", outline_size);
++    hb_str_from_locale(outline_size_string);
++
++    if (shadow_size_string == NULL || outline_size_string == NULL)
++    {
++        goto fail;
++    }
++
++    // SRT subtitles are represented internally as SSA
++    // Create an SSA header
++    const char * ssa_header =
++        "[Script Info]\r\n"
++        "ScriptType: v4.00+\r\n"
++        "Collisions: Normal\r\n"
++        "PlayResX: %d\r\n"
++        "PlayResY: %d\r\n"
++        "Timer: 100.0\r\n"
++        "WrapStyle: 0\r\n"
++        "ScaledBorderAndShadow: yes\r\n"
++        "\r\n"
++        "[V4+ Styles]\r\n"
++        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\r\n"
++        "Style: Default,%s,%d,&H00FFFFFF,&H00FFFFFF,&H000F0F0F,&H000F0F0F,0,0,0,0,100,100,0,0.00,1,%s,%s,2,20,20,20,0\r\n";
++
++    header = hb_strdup_printf(ssa_header, w, h, font, fs, outline_size_string, shadow_size_string);
++    if (header == NULL)
++    {
++        goto fail;
++    }
++
++    size_t size = strlen(header) + 1;
++    *extradata = hb_data_init(size);
++    if (*extradata == NULL)
++    {
++        goto fail;
++    }
++
++    memcpy((*extradata)->bytes, header, size);
++    free(header);
++    free(shadow_size_string);
++    free(outline_size_string);
++
++    return 0;
++
++fail:
++    hb_error("ssa extradata: malloc failure");
++    free(header);
++    free(shadow_size_string);
++    free(outline_size_string);
++
++    return 1;
++}
++
++int hb_set_h264_extradata(hb_data_t **extradata, uint8_t *sps, size_t sps_length, uint8_t *pps, size_t pps_length)
++{
++    hb_data_close(extradata);
++
++    /* Taken from x264 muxers.c */
++    size_t length = 5 + 1 + 2 + sps_length + 1 + 2 + pps_length;
++    *extradata = hb_data_init(length);
++    if (*extradata == NULL)
++    {
++        hb_error("H.264 extradata: malloc failure");
++        return 1;
++    }
++
++    uint8_t *data = (*extradata)->bytes;
++
++    data[0] = 1;
++    data[1] = sps[1]; /* AVCProfileIndication */
++    data[2] = sps[2]; /* profile_compat */
++    data[3] = sps[3]; /* AVCLevelIndication */
++    data[4] = 0xff; // nalu size length is four bytes
++    data[5] = 0xe1; // one sps
++
++    data[6] = sps_length >> 8;
++    data[7] = sps_length;
++
++    memcpy(data + 8, sps, sps_length);
++
++    data[8  + sps_length] = 1; // one pps
++    data[9  + sps_length] = pps_length >> 8;
++    data[10 + sps_length] = pps_length;
++
++    memcpy(data + 11 + sps_length, pps, pps_length);
++
++    return 0;
++}
++
++int hb_set_xiph_extradata(hb_data_t **extradata, uint8_t headers[3][HB_CONFIG_MAX_SIZE])
++{
++    hb_data_close(extradata);
++
++    int size = 0;
++    ogg_packet *ogg_headers[3];
++
++    for (int ii = 0; ii < 3; ii++)
++    {
++        ogg_headers[ii] = (ogg_packet *)headers[ii];
++        size += ogg_headers[ii]->bytes + 2;
++    }
++
++    *extradata = hb_data_init(size);
++    if (*extradata == NULL)
++    {
++        hb_error("xiph extradata: malloc failure");
++        return 1;
++    }
++
++    uint8_t *data = (*extradata)->bytes;
++    size = 0;
++
++    for (int ii = 0; ii < 3; ii++)
++    {
++        AV_WB16(data + size, ogg_headers[ii]->bytes);
++        size += 2;
++        memcpy(data + size, ogg_headers[ii]->packet,
++                               ogg_headers[ii]->bytes);
++        size += ogg_headers[ii]->bytes;
++    }
++
++    return 0;
++}
++
++static int64_t get_uvlc(hb_bitstream_t *bs)
++{
++    int leadingZeros = 0;
++
++    while (1)
++    {
++        int done = hb_bitstream_get_bits(bs, 1);
++        if (done)
++        {
++            break;
++        }
++        leadingZeros += 1;
++    }
++    if (leadingZeros >= 32)
++    {
++        return ((int64_t)1 << 32) - 1;
++    }
++
++    return hb_bitstream_get_bits(bs, leadingZeros);
++}
++
++static int get_leb128(hb_bitstream_t *bs)
++{
++    int value = 0;
++    for (int i = 0; i < 8; i++)
++    {
++        int leb128_byte = hb_bitstream_get_bits(bs, 8);
++        value |= ((leb128_byte & 0x7f) << (i * 7));
++        if (!(leb128_byte & 0x80))
++        {
++            break;
++        }
++    }
++    return value;
++}
++
++int hb_parse_av1_extradata(hb_data_t *extradata, int *level_idx, int *high_tier)
++{
++    hb_bitstream_t bs;
++    int obu_type, obu_extension_flag, obu_has_size_field, obu_size = 0;
++    int seq_level_idx, seq_tier;
++
++    hb_bitstream_init(&bs, extradata->bytes, extradata->size, 0);
++
++    hb_bitstream_skip_bits(&bs, 1);  // obu_forbidden_bit
++    obu_type = hb_bitstream_get_bits(&bs, 4);
++    obu_extension_flag = hb_bitstream_get_bits(&bs, 1);
++    obu_has_size_field = hb_bitstream_get_bits(&bs, 1);
++    hb_bitstream_skip_bits(&bs, 1);  // obu_reserved_1bit
++
++    if (obu_type != 1)
++    {
++        goto fail;
++    }
++
++    if (obu_extension_flag)
++    {
++        hb_bitstream_skip_bits(&bs, 3);  // temporal_id
++        hb_bitstream_skip_bits(&bs, 2);  // spatial_id
++        hb_bitstream_skip_bits(&bs, 3);  // extension_header_reserved_3bits
++    }
++
++    if (obu_has_size_field)
++    {
++        obu_size = get_leb128(&bs);
++    }
++    else
++    {
++        obu_size = extradata->size - 1 - obu_extension_flag;
++    }
++
++    if (obu_size == 0)
++    {
++        goto fail;
++    }
++
++    hb_bitstream_skip_bits(&bs, 3);  // seq_profile
++    hb_bitstream_skip_bits(&bs, 1);  // still_picture
++    int reduced_still_picture_header = hb_bitstream_get_bits(&bs, 1);
++    if (reduced_still_picture_header)
++    {
++        seq_level_idx = hb_bitstream_get_bits(&bs, 5);
++        seq_tier = 0;
++    }
++    else
++    {
++        int timing_info_present_flag = hb_bitstream_get_bits(&bs, 1);
++        if (timing_info_present_flag)
++        {
++            hb_bitstream_skip_bits(&bs, 32);  // num_units_in_display_tick
++            hb_bitstream_skip_bits(&bs, 32);  // time_scale
++            int equal_picture_interval = hb_bitstream_get_bits(&bs, 1);  // time_scale
++            if (equal_picture_interval)
++            {
++                get_uvlc(&bs); // num_ticks_per_picture_minus_1
++            }
++
++            int decoder_model_info_present_flag = hb_bitstream_get_bits(&bs, 1);
++            if (decoder_model_info_present_flag)
++            {
++                hb_bitstream_skip_bits(&bs, 5);  // buffer_delay_length_minus_1
++                hb_bitstream_skip_bits(&bs, 32); // num_units_in_decoding_tick
++                hb_bitstream_skip_bits(&bs, 5);  // buffer_removal_time_length_minus_1
++                hb_bitstream_skip_bits(&bs, 3);  // frame_presentation_time_length_minus_1
++            }
++        }
++
++        hb_bitstream_skip_bits(&bs, 1); // initial_display_delay_present_flag
++        int operating_points_cnt_minus_1 = hb_bitstream_get_bits(&bs, 5);
++        for (int i = 0; i <= operating_points_cnt_minus_1; i++)
++        {
++            hb_bitstream_skip_bits(&bs, 12);
++            seq_level_idx = hb_bitstream_get_bits(&bs, 5);
++            if (seq_level_idx > 7)
++            {
++                seq_tier = hb_bitstream_get_bits(&bs, 1);
++            }
++        }
++    }
++
++    *high_tier = seq_tier;
++    *level_idx = seq_level_idx;
++    return 0;
++
++fail:
++    *high_tier = 0;
++    *level_idx = 0;
++    return 1;
++}
++
++int hb_parse_h265_extradata(hb_data_t *extradata, int *level_idc, int *high_tier)
++{
++    hb_bitstream_t bs;
++
++    if (extradata->size < 13)
++    {
++        *level_idc = 0;
++        *high_tier = 0;
++        return 1;
++    }
++
++    hb_bitstream_init(&bs, extradata->bytes, extradata->size, 0);
++
++    hb_bitstream_skip_bits(&bs, 8);  // configurationVersion
++    hb_bitstream_skip_bits(&bs, 2);  // general_profile_space
++    int general_tier_flag = hb_bitstream_get_bits(&bs, 1);
++    hb_bitstream_skip_bits(&bs, 5);  // general_profile_idc
++    hb_bitstream_skip_bits(&bs, 32); // general_profile_compatibility_flags
++
++    hb_bitstream_skip_bits(&bs, 32); // << 16 general_constraint_indicator_flags
++    hb_bitstream_skip_bits(&bs, 16);
++    int general_level_idc = hb_bitstream_get_bits(&bs, 8);
++
++    *high_tier = general_tier_flag;
++    *level_idc = general_level_idc / 3;
++    return 0;
++}
+diff --git a/libhb/handbrake/dovi_common.h b/libhb/handbrake/dovi_common.h
+index da0067541..d221ebb6d 100644
+--- a/libhb/handbrake/dovi_common.h
++++ b/libhb/handbrake/dovi_common.h
+@@ -13,32 +13,6 @@
+ #include "handbrake/project.h"
+ #include <stdint.h>
+ 
+-static struct
+-{
+-    const uint32_t id;
+-    const uint32_t max_pps;
+-    const uint32_t max_width;
+-    const uint32_t max_bitrate_main_tier;
+-    const uint32_t max_bitrate_high_tier;
+-}
+-hb_dolby_vision_levels[] =
+-{
+-    { 1,  22118400,   1280, 20,  50  },
+-    { 2,  27648000,   1280, 20,  50  },
+-    { 3,  49766400,   1920, 20,  70  },
+-    { 4,  62208000,   2560, 20,  70  },
+-    { 5,  124416000,  3840, 20,  70  },
+-    { 6,  199065600,  3840, 25,  130 },
+-    { 7,  248832000,  3840, 25,  130 },
+-    { 8,  398131200,  3840, 40,  130 },
+-    { 9,  497664000,  3840, 40,  130 },
+-    { 10, 995328000,  3840, 60,  240 },
+-    { 11, 995328000,  7680, 60,  240 },
+-    { 12, 1990656000, 7680, 120, 480 },
+-    { 13, 3981312000, 7680, 240, 800 },
+-    { 0, 0, 0, 0, 0 }
+-};
+-
+ int hb_dovi_max_rate(int width, int pps, int bitrate, int level, int high_tier);
+ int hb_dovi_level(int width, int pps, int max_rate, int high_tier);
+ 
+diff --git a/libhb/handbrake/extradata.h b/libhb/handbrake/extradata.h
+new file mode 100644
+index 000000000..71a1d3bbd
+--- /dev/null
++++ b/libhb/handbrake/extradata.h
+@@ -0,0 +1,30 @@
++/* extradata.h
++
++   Copyright (c) 2003-2024 HandBrake Team
++   This file is part of the HandBrake source code
++   Homepage: <http://handbrake.fr/>.
++   It may be used under the terms of the GNU General Public License v2.
++   For full terms see the file COPYING file or visit http://www.gnu.org/licenses/gpl-2.0.html
++ */
++
++#ifndef HANDBRAKE_EXTRADATA_H
++#define HANDBRAKE_EXTRADATA_H
++
++#ifdef __LIBHB__
++
++#include "handbrake/handbrake.h"
++
++int hb_set_extradata(hb_data_t **extradata, const uint8_t *bytes, size_t length);
++
++int hb_set_h264_extradata(hb_data_t **extradata, uint8_t *sps, size_t sps_length, uint8_t *pps, size_t pps_length);
++int hb_set_xiph_extradata(hb_data_t **extradata, uint8_t headers[3][HB_CONFIG_MAX_SIZE]);
++
++int hb_set_text_extradata(hb_data_t **extradata, const uint8_t *bytes, size_t length);
++int hb_set_ssa_extradata(hb_data_t **extradata, const char *font, int fs, int w, int h);
++
++int hb_parse_av1_extradata(hb_data_t *extradata, int *level_idx, int *high_tier);
++int hb_parse_h265_extradata(hb_data_t *extradata, int *level_idc, int *high_tier);
++
++#endif
++
++#endif /* HANDBRAKE_TASKSET_H */
+diff --git a/libhb/handbrake/h265_common.h b/libhb/handbrake/h265_common.h
+index f434caaee..e52377f42 100644
+--- a/libhb/handbrake/h265_common.h
++++ b/libhb/handbrake/h265_common.h
+@@ -43,34 +43,6 @@ static const int          hb_h265_level_values[]            = {
+     -1,  30,  60,  63,  90,  93, 120, 123,
+     150, 153, 156, 180, 183, 186,   0, };
+ 
+-static struct
+-{
+-    const char *level;
+-    const int level_id;
+-    const uint32_t max_luma_sample_rate;
+-    const uint32_t max_luma_picture_size;
+-    const uint32_t max_bitrate_main_tier;
+-    const uint32_t max_bitrate_high_tier;
+-}
+-
+-hb_h265_level_limits[] =
+-{
+-    { "1.0", 10, 552960,     36864,    128,    128    },
+-    { "2.0", 20, 3686400,    122880,   1500,   1500   },
+-    { "2.1", 31, 7372800,    245760,   3000,   3000   },
+-    { "3.0", 30, 16588800,   552960,   6000,   6000   },
+-    { "3.1", 31, 33177600,   983040,   10000,  10000  },
+-    { "4.0", 40, 66846720,   2228224,  12000,  30000  },
+-    { "4.1", 41, 133693440,  2228224,  20000,  50000  },
+-    { "5.0", 50, 267386880,  8912896,  25000,  100000 },
+-    { "5.1", 51, 534773760,  8912896,  40000,  160000 },
+-    { "5.2", 52, 1069547520, 8912896,  60000,  240000 },
+-    { "6.0", 60, 1069547520, 35651584, 60000,  240000 },
+-    { "6.1", 61, 2139095040, 35651584, 120000, 480000 },
+-    { "6.2", 62, 4278190080, 35651584, 240000, 800000 },
+-    { NULL,  0,  0,          0,        0,      0      }
+-};
+-
+ // stolen from libx265's x265.h
+ static const char * const hb_h265_fullrange_names[] = {
+     "limited", "full", NULL, };
+diff --git a/libhb/handbrake/rpu.h b/libhb/handbrake/rpu.h
+new file mode 100644
+index 000000000..07956f8c0
+--- /dev/null
++++ b/libhb/handbrake/rpu.h
+@@ -0,0 +1,19 @@
++/* rpu.h
++
++   Copyright (c) 2003-2024 HandBrake Team
++   This file is part of the HandBrake source code
++   Homepage: <http://handbrake.fr/>.
++   It may be used under the terms of the GNU General Public License v2.
++   For full terms see the file COPYING file or visit http://www.gnu.org/licenses/gpl-2.0.html
++ */
++
++#ifndef HANDBRAKE_RPU_H
++#define HANDBRAKE_RPU_H
++
++#define RPU_MODE_UPDATE_ACTIVE_AREA  1
++#define RPU_MODE_CONVERT_TO_8_1      2
++
++#define RPU_MODE_EMIT_UNSPECT_62_NAL 3
++#define RPU_MODE_EMIT_T35_OBU        4
++
++#endif // HANDBRAKE_RPU_H
+diff --git a/libhb/rpu.c b/libhb/rpu.c
+index e452d4942..313484294 100644
+--- a/libhb/rpu.c
++++ b/libhb/rpu.c
+@@ -8,13 +8,12 @@
+  */
+ 
+ #include "handbrake/handbrake.h"
++#include "handbrake/rpu.h"
+ 
+ #if HB_PROJECT_FEATURE_LIBDOVI
+ #include "libdovi/rpu_parser.h"
+ #endif
+ 
+-#define RPU_DEFAULT_MODE 1
+-
+ struct hb_filter_private_s
+ {
+     int        mode;
+@@ -81,7 +80,7 @@ static int rpu_init(hb_filter_object_t *filter,
+ 
+     pv->input = *init;
+ 
+-    int mode = RPU_DEFAULT_MODE;
++    int mode = RPU_MODE_UPDATE_ACTIVE_AREA | RPU_MODE_EMIT_UNSPECT_62_NAL;
+     double scale_factor_x = 1, scale_factor_y = 1;
+     int crop_top = 0, crop_bottom = 0, crop_left = 0, crop_right = 0;
+     int pad_top = 0, pad_bottom = 0, pad_left = 0, pad_right = 0;
+@@ -212,7 +211,7 @@ static int rpu_work(hb_filter_object_t *filter,
+                 break;
+             }
+ 
+-            if (pv->mode & 2)
++            if (pv->mode & RPU_MODE_CONVERT_TO_8_1)
+             {
+                 const DoviRpuDataHeader *header = dovi_rpu_get_header(rpu_in);
+                 if (header && header->guessed_profile == 7)
+@@ -231,7 +230,7 @@ static int rpu_work(hb_filter_object_t *filter,
+                 }
+             }
+ 
+-            if (pv->mode & 1)
++            if (pv->mode & RPU_MODE_UPDATE_ACTIVE_AREA)
+             {
+                 uint16_t left_offset = 0, right_offset = 0;
+                 uint16_t top_offset  = 0, bottom_offset = 0;
+@@ -284,14 +283,24 @@ static int rpu_work(hb_filter_object_t *filter,
+ 
+             if (pv->mode)
+             {
+-                const DoviData *rpu_data = dovi_write_unspec62_nalu(rpu_in);
++                const DoviData *rpu_data = NULL;
++
++                if (pv->mode & RPU_MODE_EMIT_UNSPECT_62_NAL)
++                {
++                    rpu_data = dovi_write_unspec62_nalu(rpu_in);
++                }
++                else if (pv->mode & RPU_MODE_EMIT_T35_OBU)
++                {
++                    rpu_data = dovi_write_av1_rpu_metadata_obu_t35_complete(rpu_in);
++                }
+ 
+                 if (rpu_data)
+                 {
+                     hb_buffer_remove_side_data(in, side_data->type);
++                    const int offset = pv->mode & RPU_MODE_EMIT_UNSPECT_62_NAL ? 2 : 0;
+ 
+-                    AVBufferRef *ref = av_buffer_alloc(rpu_data->len - 2);
+-                    memcpy(ref->data, rpu_data->data + 2, rpu_data->len - 2);
++                    AVBufferRef *ref = av_buffer_alloc(rpu_data->len - offset);
++                    memcpy(ref->data, rpu_data->data + offset, rpu_data->len - offset);
+                     AVFrameSideData *sd_dst = hb_buffer_new_side_data_from_buf(in, AV_FRAME_DATA_DOVI_RPU_BUFFER, ref);
+ 
+                     if (!sd_dst)
+@@ -303,7 +312,7 @@ static int rpu_work(hb_filter_object_t *filter,
+                 }
+                 else
+                 {
+-                    hb_log("dovi_write_unspec62_nalu failed");
++                    hb_log("rpu: dovi_write failed");
+                 }
+             }
+ 
+diff --git a/libhb/work.c b/libhb/work.c
+index 0518d88ef..02d0bfd32 100644
+--- a/libhb/work.c
++++ b/libhb/work.c
+@@ -13,6 +13,7 @@
+ #include "handbrake/decomb.h"
+ #include "handbrake/hbavfilter.h"
+ #include "handbrake/dovi_common.h"
++#include "handbrake/rpu.h"
+ #include "handbrake/hwaccel.h"
+ 
+ #if HB_PROJECT_FEATURE_QSV
+@@ -1491,7 +1492,7 @@ static void update_dolby_vision_level(hb_job_t *job)
+     // Encoders will override it when needed.
+     int pps = (double)job->width * job->height * (job->vrate.num / job->vrate.den);
+     int bitrate = job->vquality == HB_INVALID_VIDEO_QUALITY ? job->vbitrate : -1;
+-    int max_rate = hb_dovi_max_rate(job->width, pps, bitrate, 0, 1);
++    int max_rate = hb_dovi_max_rate(job->vcodec, job->width, pps, bitrate, 0, 1);
+     job->dovi.dv_level = hb_dovi_level(job->width, pps, max_rate, 1);
+ }
+ 
+@@ -1516,7 +1517,9 @@ static void sanitize_dynamic_hdr_metadata_passthru(hb_job_t *job)
+     if ((job->dovi.dv_profile != 5 &&
+          job->dovi.dv_profile != 7 &&
+          job->dovi.dv_profile != 8) ||
+-         job->vcodec != HB_VCODEC_X265_10BIT)
++        (job->vcodec != HB_VCODEC_X265_10BIT &&
++         job->vcodec != HB_VCODEC_VT_H265_10BIT &&
++         job->vcodec != HB_VCODEC_SVT_AV1_10BIT))
+     {
+         job->passthru_dynamic_hdr_metadata &= ~DOVI;
+     }
+@@ -1529,7 +1532,7 @@ static void sanitize_dynamic_hdr_metadata_passthru(hb_job_t *job)
+             (job->dovi.dv_profile == 8 && job->dovi.dv_bl_signal_compatibility_id == 6))
+         {
+             // Convert to 8.1
+-            mode |= 2;
++            mode |= RPU_MODE_CONVERT_TO_8_1;
+ 
+             job->dovi.dv_profile = 8;
+             job->dovi.el_present_flag = 0;
+@@ -1540,7 +1543,22 @@ static void sanitize_dynamic_hdr_metadata_passthru(hb_job_t *job)
+             hb_filter_find(list, HB_FILTER_PAD)        != NULL)
+         {
+             // Set the active area
+-            mode |= 1;
++            mode |= RPU_MODE_UPDATE_ACTIVE_AREA;
++        }
++
++        // AV1 uses 10 for every Dolby Vision type
++        if (job->vcodec & HB_VCODEC_AV1_MASK)
++        {
++            mode |= RPU_MODE_EMIT_T35_OBU;
++            job->dovi.dv_profile = 10;
++        }
++        else
++        {
++            mode |= RPU_MODE_EMIT_UNSPECT_62_NAL;
++            if (job->dovi.dv_profile == 10)
++            {
++                job->dovi.dv_profile = job->dovi.dv_bl_signal_compatibility_id == 0 ? 5 : 8;
++            }
+         }
+ 
+         double scale_factor_x = 1, scale_factor_y = 1;
+@@ -1696,7 +1714,8 @@ static void do_job(hb_job_t *job)
+         // Dolby Vision profile 5 requires full range
+         // TODO: find a better way to handle this
+         init.color_range = job->passthru_dynamic_hdr_metadata & DOVI &&
+-                            job->dovi.dv_profile == 5 ?
++                            (job->dovi.dv_profile == 5 ||
++                             (job->dovi.dv_profile == 10 && job->dovi.dv_bl_signal_compatibility_id == 0)) ?
+                             title->color_range : AVCOL_RANGE_MPEG;
+ #if HB_PROJECT_FEATURE_QSV
+         if (hb_qsv_full_path_is_enabled(job))
+-- 
+2.34.1
+

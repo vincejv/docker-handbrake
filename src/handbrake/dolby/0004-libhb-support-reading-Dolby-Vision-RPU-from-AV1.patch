@@ -1,0 +1,234 @@
+From 1d20bc97ffa636847a18dc398c2d4fd657ab0a32 Mon Sep 17 00:00:00 2001
+From: Damiano Galassi <damiog@gmail.com>
+Date: Sat, 20 Apr 2024 20:42:33 +0200
+Subject: [PATCH] libhb: support reading Dolby Vision RPU from AV1.  There is
+ some work in progress in FFmpeg to convert the ITU T.35 to a
+ HEVC_NAL_UNSPEC62, but until it's completed, let's store the raw ITU T.35 OBU
+ payload in a new AV_FRAME_DATA_DOVI_RPU_BUFFER_T35 side data entry and use
+ libdovi to convert it when needed.
+
+---
+ contrib/ffmpeg/A17-av1dec-dovi-rpu.patch      | 93 +++++++++++++++++++
+ ...e_itu_t35_dovi_metadata_obu-to-C-api.patch | 38 ++++++++
+ libhb/rpu.c                                   | 22 ++++-
+ libhb/work.c                                  |  3 +-
+ 4 files changed, 150 insertions(+), 6 deletions(-)
+ create mode 100644 contrib/ffmpeg/A17-av1dec-dovi-rpu.patch
+ create mode 100644 contrib/libdovi/A01-Expose-parse_itu_t35_dovi_metadata_obu-to-C-api.patch
+
+diff --git a/contrib/ffmpeg/A17-av1dec-dovi-rpu.patch b/contrib/ffmpeg/A17-av1dec-dovi-rpu.patch
+new file mode 100644
+index 000000000..8b6facc0d
+--- /dev/null
++++ b/contrib/ffmpeg/A17-av1dec-dovi-rpu.patch
+@@ -0,0 +1,93 @@
++diff --git a/libavcodec/av1dec.c b/libavcodec/av1dec.c
++index 32a795e758..053d342169 100644
++--- a/libavcodec/av1dec.c
+++++ b/libavcodec/av1dec.c
++@@ -996,6 +996,8 @@ static int export_itut_t35(AVCodecContext *avctx, AVFrame *frame,
++         break;
++     }
++     case ITU_T_T35_PROVIDER_CODE_DOLBY: {
+++        AVBufferRef *rpu_buf;
+++        AVFrameSideData *rpu;
++         int provider_oriented_code = bytestream2_get_be32(&gb);
++         if (itut_t35->itu_t_t35_country_code != ITU_T_T35_COUNTRY_CODE_US ||
++             provider_oriented_code != 0x800)
++@@ -1007,6 +1009,18 @@ static int export_itut_t35(AVCodecContext *avctx, AVFrame *frame,
++             break; // ignore
++         }
++ 
+++        rpu_buf = av_buffer_alloc(itut_t35->payload_size);
+++        if (rpu_buf) {
+++            memcpy(rpu_buf->data, itut_t35->payload, itut_t35->payload_size);
+++            rpu = av_frame_new_side_data_from_buf(frame, AV_FRAME_DATA_DOVI_RPU_BUFFER_T35, rpu_buf);
+++            if (!rpu) {
+++                av_buffer_unref(&rpu_buf);
+++                return AVERROR(ENOMEM);
+++            }
+++        } else {
+++            return AVERROR(ENOMEM);
+++        }
+++
++         ret = ff_dovi_attach_side_data(&s->dovi, frame);
++         if (ret < 0)
++             return ret;
++diff --git a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
++index ddcd0708b4..3bf3577ea9 100644
++--- a/libavcodec/libdav1d.c
+++++ b/libavcodec/libdav1d.c
++@@ -562,6 +562,8 @@ static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
++             break;
++         }
++         case ITU_T_T35_PROVIDER_CODE_DOLBY: {
+++            AVBufferRef *rpu_buf;
+++            AVFrameSideData *rpu;
++             int provider_oriented_code = bytestream2_get_be32(&gb);
++             if (itut_t35->country_code != ITU_T_T35_COUNTRY_CODE_US ||
++                 provider_oriented_code != 0x800)
++@@ -573,6 +575,18 @@ static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
++                 break; // ignore
++             }
++ 
+++            rpu_buf = av_buffer_alloc(itut_t35->payload_size);
+++            if (rpu_buf) {
+++                memcpy(rpu_buf->data, itut_t35->payload, itut_t35->payload_size);
+++                rpu = av_frame_new_side_data_from_buf(frame, AV_FRAME_DATA_DOVI_RPU_BUFFER_T35, rpu_buf);
+++                if (!rpu) {
+++                    av_buffer_unref(&rpu_buf);
+++                    goto fail;
+++                }
+++            } else {
+++                goto fail;
+++            }
+++
++             res = ff_dovi_attach_side_data(&dav1d->dovi, frame);
++             if (res < 0)
++                 goto fail;
++diff --git a/libavutil/frame.c b/libavutil/frame.c
++index eb04a65c90..5b4c0db543 100644
++--- a/libavutil/frame.c
+++++ b/libavutil/frame.c
++@@ -934,6 +934,7 @@ const char *av_frame_side_data_name(enum AVFrameSideDataType type)
++     case AV_FRAME_DATA_FILM_GRAIN_PARAMS:           return "Film grain parameters";
++     case AV_FRAME_DATA_DETECTION_BBOXES:            return "Bounding boxes for object detection and classification";
++     case AV_FRAME_DATA_DOVI_RPU_BUFFER:             return "Dolby Vision RPU Data";
+++    case AV_FRAME_DATA_DOVI_RPU_BUFFER_T35:         return "Dolby Vision RPU ITU T35 Data";
++     case AV_FRAME_DATA_DOVI_METADATA:               return "Dolby Vision Metadata";
++     case AV_FRAME_DATA_AMBIENT_VIEWING_ENVIRONMENT: return "Ambient viewing environment";
++     }
++diff --git a/libavutil/frame.h b/libavutil/frame.h
++index 8aa05ec127..67798577b1 100644
++--- a/libavutil/frame.h
+++++ b/libavutil/frame.h
++@@ -200,6 +200,12 @@ enum AVFrameSideDataType {
++      */
++     AV_FRAME_DATA_DOVI_RPU_BUFFER,
++ 
+++    /**
+++     * Dolby Vision RPU ITU T35 raw data, suitable for passing to SVT-AV1
+++     * or other libraries. Array of uint8_t.
+++     */
+++    AV_FRAME_DATA_DOVI_RPU_BUFFER_T35,
+++
++     /**
++      * Parsed Dolby Vision metadata, suitable for passing to a software
++      * implementation. The payload is the AVDOVIMetadata struct defined in
+diff --git a/contrib/libdovi/A01-Expose-parse_itu_t35_dovi_metadata_obu-to-C-api.patch b/contrib/libdovi/A01-Expose-parse_itu_t35_dovi_metadata_obu-to-C-api.patch
+new file mode 100644
+index 000000000..a71d317d1
+--- /dev/null
++++ b/contrib/libdovi/A01-Expose-parse_itu_t35_dovi_metadata_obu-to-C-api.patch
+@@ -0,0 +1,38 @@
++From 16d4559b01cb04b55b9af987538d04012228e551 Mon Sep 17 00:00:00 2001
++From: Damiano Galassi <damiog@gmail.com>
++Date: Sat, 20 Apr 2024 13:43:46 +0200
++Subject: [PATCH] Expose parse_itu_t35_dovi_metadata_obu to C api.
++
++---
++ dolby_vision/src/capi.rs | 15 +++++++++++++++
++ 1 file changed, 15 insertions(+)
++
++diff --git a/dolby_vision/src/capi.rs b/dolby_vision/src/capi.rs
++index 5b425e3..878cda8 100644
++--- a/dolby_vision/src/capi.rs
+++++ b/dolby_vision/src/capi.rs
++@@ -27,6 +27,21 @@ pub unsafe extern "C" fn dovi_parse_rpu(buf: *const u8, len: size_t) -> *mut Rpu
++     Box::into_raw(Box::new(RpuOpaque::from(res)))
++ }
++ 
+++/// # Safety
+++/// The pointer to the data must be valid.
+++///
+++/// Parse a Dolby Vision from a AV1 ITU-T T.35 metadata OBU byte buffer.
+++/// Adds an error if the parsing fails.
+++#[no_mangle]
+++pub unsafe extern "C" fn dovi_parse_itu_t35_dovi_metadata_obu(buf: *const u8, len: size_t) -> *mut RpuOpaque {
+++    assert!(!buf.is_null());
+++
+++    let data = slice::from_raw_parts(buf, len);
+++    let res = DoviRpu::parse_itu_t35_dovi_metadata_obu(data);
+++
+++    Box::into_raw(Box::new(RpuOpaque::from(res)))
+++}
+++
++ /// # Safety
++ /// The pointer to the data must be valid.
++ ///
++-- 
++2.39.3 (Apple Git-146)
++
+diff --git a/libhb/rpu.c b/libhb/rpu.c
+index 313484294..a5775789c 100644
+--- a/libhb/rpu.c
++++ b/libhb/rpu.c
+@@ -142,12 +142,15 @@ static void rpu_close(hb_filter_object_t * filter)
+ static void apply_rpu_if_needed(hb_filter_private_t *pv, hb_buffer_t *buf)
+ {
+     int rpu_available = 0;
++    enum AVFrameSideDataType type = AV_FRAME_DATA_DOVI_RPU_BUFFER;
+ 
+     for (int i = 0; i < buf->nb_side_data; i++)
+     {
+         const AVFrameSideData *side_data = buf->side_data[i];
+-        if (side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER)
++        if (side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER ||
++            side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER_T35)
+         {
++            type = side_data->type;
+             rpu_available = 1;
+         }
+     }
+@@ -157,7 +160,7 @@ static void apply_rpu_if_needed(hb_filter_private_t *pv, hb_buffer_t *buf)
+         if (pv->rpu)
+         {
+             AVBufferRef *ref = av_buffer_ref(pv->rpu);
+-            AVFrameSideData *sd_dst = hb_buffer_new_side_data_from_buf(buf, AV_FRAME_DATA_DOVI_RPU_BUFFER, ref);
++            AVFrameSideData *sd_dst = hb_buffer_new_side_data_from_buf(buf, type, ref);
+             if (!sd_dst)
+             {
+                 av_buffer_unref(&ref);
+@@ -201,13 +204,22 @@ static int rpu_work(hb_filter_object_t *filter,
+     for (int i = 0; i < in->nb_side_data; i++)
+     {
+         const AVFrameSideData *side_data = in->side_data[i];
+-        if (side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER)
++        if (side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER ||
++            side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER_T35)
+         {
+-            DoviRpuOpaque *rpu_in = dovi_parse_unspec62_nalu(side_data->data, side_data->size);
++            DoviRpuOpaque *rpu_in = NULL;
++            if (side_data->type == AV_FRAME_DATA_DOVI_RPU_BUFFER)
++            {
++                rpu_in = dovi_parse_unspec62_nalu(side_data->data, side_data->size);
++            }
++            else
++            {
++                rpu_in = dovi_parse_itu_t35_dovi_metadata_obu(side_data->data, side_data->size);
++            }
+ 
+             if (rpu_in == NULL)
+             {
+-                hb_log("rpu: dovi_parse_unspec62_nalu failed");
++                hb_log("rpu: dovi_parse failed");
+                 break;
+             }
+ 
+diff --git a/libhb/work.c b/libhb/work.c
+index 02d0bfd32..69f211d75 100644
+--- a/libhb/work.c
++++ b/libhb/work.c
+@@ -1516,7 +1516,8 @@ static void sanitize_dynamic_hdr_metadata_passthru(hb_job_t *job)
+ #if HB_PROJECT_FEATURE_LIBDOVI
+     if ((job->dovi.dv_profile != 5 &&
+          job->dovi.dv_profile != 7 &&
+-         job->dovi.dv_profile != 8) ||
++         job->dovi.dv_profile != 8 &&
++         job->dovi.dv_profile != 10) ||
+         (job->vcodec != HB_VCODEC_X265_10BIT &&
+          job->vcodec != HB_VCODEC_VT_H265_10BIT &&
+          job->vcodec != HB_VCODEC_SVT_AV1_10BIT))
+-- 
+2.34.1
+
