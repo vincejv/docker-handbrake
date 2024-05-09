@@ -477,7 +477,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0008-libhb-refactor-how-extrad
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0009-Dovi-compile-fix-2.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0010-libdovi-bump-to-3.3.0.patch
 # Dolby vision patches -- END
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string.patch
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 
