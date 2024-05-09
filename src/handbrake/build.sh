@@ -222,7 +222,6 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mappin
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-libhb-refactor-Dolby-Vision-level-selection-code-def.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0002-libhb-convert-dolby-vision-rpus-to-t35-obu-payloads-.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0003-contrib-fix-a-crash-that-happens-when-multiple-metad.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0004-libhb-support-reading-Dolby-Vision-RPU-from-AV1.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0005-scan-always-use-UNDEF-for-Dolby-Vision-5-and-10.0-un.patch
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
