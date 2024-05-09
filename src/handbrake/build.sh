@@ -465,6 +465,19 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-pres
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mapping_family-option-to-1-.patch
+# Dolby vision patches -- START
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-libhb-refactor-Dolby-Vision-level-selection-code-def.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-SVT-AV1-hb-mainline-sync.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0002-libhb-convert-dolby-vision-rpus-to-t35-obu-payloads-.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0003-contrib-fix-a-crash-that-happens-when-multiple-metad.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0005-scan-always-use-UNDEF-for-Dolby-Vision-5-and-10.0-un.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0006-Fix-merge-errors.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0007-h265-Dovi-compile-error.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0008-libhb-refactor-how-extradata-is-stored-use-a-dynamic.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0009-Dovi-compile-fix-2.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0010-libdovi-bump-to-3.3.0.patch
+# Dolby vision patches -- END
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 

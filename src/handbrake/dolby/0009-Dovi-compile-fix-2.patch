@@ -1,0 +1,31 @@
+From 9dc37f05c55194171ab3ec54462399ccb0d04cba Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Thu, 9 May 2024 21:01:00 +0800
+Subject: [PATCH] Dovi compile fix 2
+
+---
+ libhb/work.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/libhb/work.c b/libhb/work.c
+index 14b8cf398..7d3a45933 100644
+--- a/libhb/work.c
++++ b/libhb/work.c
+@@ -1512,9 +1512,11 @@ static void sanitize_dynamic_hdr_metadata_passthru(hb_job_t *job)
+ #if HB_PROJECT_FEATURE_LIBDOVI
+     if ((job->dovi.dv_profile != 5 &&
+          job->dovi.dv_profile != 7 &&
+-         job->dovi.dv_profile != 8) ||
+-         job->vcodec != HB_VCODEC_X265_10BIT &&
+-         job->vcodec != HB_VCODEC_SVT_AV1_10BIT)))
++         job->dovi.dv_profile != 8 &&
++         job->dovi.dv_profile != 10) ||
++        (job->vcodec != HB_VCODEC_X265_10BIT &&
++         job->vcodec != HB_VCODEC_VT_H265_10BIT &&
++         job->vcodec != HB_VCODEC_SVT_AV1_10BIT))
+     {
+         job->passthru_dynamic_hdr_metadata &= ~DOVI;
+     }
+-- 
+2.34.1
+

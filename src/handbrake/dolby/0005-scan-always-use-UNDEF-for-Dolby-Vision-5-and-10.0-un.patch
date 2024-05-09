@@ -1,0 +1,35 @@
+From 1cf3934e1238349f4032abbc1c75ae90a16f2634 Mon Sep 17 00:00:00 2001
+From: Damiano Galassi <damiog@gmail.com>
+Date: Thu, 11 Apr 2024 08:24:21 +0200
+Subject: [PATCH] scan: always use UNDEF for Dolby Vision 5 and 10.0 until we
+ support the right code points.
+
+---
+ libhb/scan.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/libhb/scan.c b/libhb/scan.c
+index 8ab905bf2..acc2d2023 100644
+--- a/libhb/scan.c
++++ b/libhb/scan.c
+@@ -1313,9 +1313,14 @@ skip_preview:
+             title->color_transfer = get_color_transfer(title->color_transfer);
+             title->color_matrix   = get_color_matrix(title->color_matrix, vid_info.geometry);
+         }
+-        // Let's try to guess a color profile only if the source is not Dolby Vision 5
+-        // which requires the values to be unset
+-        else if (title->dovi.dv_profile != 5)
++        else if (title->dovi.dv_profile == 5 ||
++                 (title->dovi.dv_profile == 10 && title->dovi.dv_bl_signal_compatibility_id == 0))
++        {
++            title->color_prim     = HB_COLR_PRI_UNDEF;
++            title->color_transfer = HB_COLR_TRA_UNDEF;
++            title->color_matrix   = HB_COLR_MAT_UNDEF;
++        }
++        else
+         {
+             title->color_prim     = get_color_prim(vid_info.color_prim, vid_info.geometry, vid_info.rate);
+             title->color_transfer = get_color_transfer(vid_info.color_transfer);
+-- 
+2.34.1
+
