@@ -153,6 +153,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0011-fix-macos-compile.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0012-Import-dovi-in-encvt.patch
 # Dolby vision patches -- END
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Disable-some-packaging-rules.patch
 gsed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 
@@ -179,15 +180,9 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity
 # export CXXFLAGS="$CFLAGS"
 # export CPPFLAGS="$CFLAGS"
 
-# export PATH="/tmp/toolchains/mingw-w64-x86_64/bin:${PATH}"
-
 log "Configuring HandBrake..."
 (
     CONF_FLAGS="--disable-qsv --disable-nvenc"
-
-    # if xx-info is-cross; then
-    #     CONF_FLAGS="$CONF_FLAGS --cross $(xx-info)"
-    # fi
 
     cd /tmp/handbrake && ./configure \
         --verbose \
@@ -197,23 +192,19 @@ log "Configuring HandBrake..."
         --enable-libdovi \
         --no-harden \
         $CONF_FLAGS \
-
-    # cd /tmp/handbrake && ./configure
 )
 
 cd /tmp/handbrake/build
 
 log "Compiling HandBrake..."
 make ub
-# && make pkg.create
+
+log "Packaging HandBrake..."
+make pkg.create
 # make -C /tmp/handbrake/build -j$(sysctl -n hw.activecpu)
 
 # log "Fix permissions..."
 # chown -R runner /tmp/handbrake/build
-
-log "Packaging HandBrake..."
-# cd /tmp/handbrake/build
-# make -C /tmp/handbrake/build pkg.create
 
 # make --directory=/tmp/handbrake/build/pkg install
 # make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
@@ -232,3 +223,7 @@ log "Packaging HandBrake..."
 
 #log "Handbrake install content:"
 # find /tmp/handbrake-install
+
+log "Rename packages"
+mv /tmp/handbrake/build/pkg/HandBrake-*.dmg /tmp/handbrake/build/pkg/HandBrake-1.7.3.dmg
+mv /tmp/handbrake/build/pkg/HandBrakeCLI-*.dmg /tmp/handbrake/build/pkg/HandBrakeCLI-1.7.3.dmg

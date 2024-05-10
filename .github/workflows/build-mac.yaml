@@ -83,18 +83,24 @@ jobs:
             https://github.com/HandBrake/HandBrake/releases/download/${{ env.HANDBRAKE_VERSION }}/HandBrake-${{ env.HANDBRAKE_VERSION }}-source.tar.bz2 \
             ${{ env.HANDBRAKE_DEBUG_MODE }} \
             ${{ steps.commit.outputs.short }}
-      # - name: Upload as mac package artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: mac-pkg
-      #     path: /tmp/handbrake/build/pkg
-      #     if-no-files-found: error
-      #     retention-days: 90
-      # - name: Upload binaries to release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: "/tmp/handbrake/build/pkg"
-      #     makeLatest: false
+      - name: Upload as mac package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-pkg
+          path: /tmp/handbrake/build/pkg
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload HB binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /tmp/handbrake/build/pkg/*
+          file_glob: true
+          overwrite: true
+          body: ${{ needs.versioning.outputs.changelog }}
+          tag: ${{ needs.versioning.outputs.new_tag }}
+          release_name: Release ${{ needs.versioning.outputs.new_tag }}-${{ needs.versioning.outputs.commit }}
+          target_commit: ${{ github.ref_name }}
 
   # merge:
   #   runs-on: ubuntu-latest

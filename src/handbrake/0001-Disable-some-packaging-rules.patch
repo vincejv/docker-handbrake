@@ -1,0 +1,36 @@
+From 9ab1a8b011654a81d6030cdcfd366c5e83d0948a Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Sat, 11 May 2024 13:37:03 +0800
+Subject: [PATCH] pkg.create disable
+
+---
+ pkg/module.rules | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/pkg/module.rules b/pkg/module.rules
+index e3d822545..95be3a1e6 100644
+--- a/pkg/module.rules
++++ b/pkg/module.rules
+@@ -14,16 +14,13 @@ pkg.clean:
+ 
+ $(PKG.src.tar.bz2): | $(dir $(PKG.src.tar.bz2))
+ $(PKG.src.tar.bz2): $(STAGE.out.src.dist/)
+-	$(TAR.exe) cjf $@ -C $(STAGE.out.src/) $(PKG.basename)
++	echo "Nothing to do"
+ 
+ $(STAGE.out.src.dist/):
+-	$(MKDIR.exe) -p $(STAGE.out.src/)
+-	$(GIT.exe) -C $(SRC/) archive --format=tar --prefix=$(PKG.basename)/ $(HB.repo.shorthash) | $(TAR.exe) -xC $(STAGE.out.src/)
+-	$(SRC/)scripts/repo-info.sh $(SRC/) $(GIT.exe) > $@/version.txt
++	echo "Nothing to do"
+ 
+ $(PKG.src-contrib.tar.bz2):
+-	$(TAR.exe) cjf $@ -C $(CONTRIB.download/) \
+-	    $(foreach f,$(MODULES.NAMES),$(notdir $($f.FETCH.tar)))
++	echo "Nothing to do"
+ 
+ ###############################################################################
+ 
+-- 
+2.34.1
+
