@@ -1,10 +1,23 @@
 # Docker container for HandBrake
-[![Release](https://img.shields.io/github/release/jlesage/docker-handbrake.svg?logo=github&style=for-the-badge)](https://github.com/jlesage/docker-handbrake/releases/latest)
-[![Docker Image Size](https://img.shields.io/docker/image-size/jlesage/handbrake/latest?logo=docker&style=for-the-badge)](https://hub.docker.com/r/jlesage/handbrake/tags)
-[![Docker Pulls](https://img.shields.io/docker/pulls/jlesage/handbrake?label=Pulls&logo=docker&style=for-the-badge)](https://hub.docker.com/r/jlesage/handbrake)
-[![Docker Stars](https://img.shields.io/docker/stars/jlesage/handbrake?label=Stars&logo=docker&style=for-the-badge)](https://hub.docker.com/r/jlesage/handbrake)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/jlesage/docker-handbrake/build-image.yml?logo=github&branch=master&style=for-the-badge)](https://github.com/jlesage/docker-handbrake/actions/workflows/build-image.yml)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=for-the-badge)](https://paypal.me/JocelynLeSage)
+[![Release](https://img.shields.io/github/release/vincejv/docker-handbrake.svg?logo=github&style=for-the-badge)](https://github.com/vincejv/docker-handbrake/releases/latest)
+[![Docker Image Size](https://img.shields.io/docker/image-size/vincejv/handbrake/latest?logo=docker&style=for-the-badge)](https://hub.docker.com/r/vincejv/handbrake/tags)
+[![Docker Pulls](https://img.shields.io/docker/pulls/vincejv/handbrake?label=Pulls&logo=docker&style=for-the-badge)](https://hub.docker.com/r/vincejv/handbrake)
+[![Docker Stars](https://img.shields.io/docker/stars/vincejv/handbrake?label=Stars&logo=docker&style=for-the-badge)](https://hub.docker.com/r/vincejv/handbrake)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/vincejv/docker-handbrake/build-image.yml?logo=github&branch=master&style=for-the-badge)](https://github.com/vincejv/docker-handbrake/actions/workflows/build-ubuntu.yml)
+
+---
+This is a fork of the original Handbrake docker container, the following patches are applied
+- Upgrade libopus to v1.5.2
+- Backport opus [mapping family patch](https://github.com/HandBrake/HandBrake/commit/8a0847806d558b252daceb5610d2ba61f7e9ba5a)
+- Backport [DoVi Passthrough](https://github.com/HandBrake/HandBrake/commit/770b00118cc77d73d65f4ceb1e1b06b9ae8b4d1a) for AV1 transcodes, [limitations](https://handbrake.fr/docs/en/latest/technical/hdr.html)
+- Replace SVT-AV1 with [PSY fork](https://github.com/gianni-rosato/svt-av1-psy) all [b]API[/b] features implemented including extended, subjective SSIM and fractional CRF
+- [Missing languages](https://github.com/HandBrake/HandBrake/pull/5978) during subtitles/audio passthrough
+- Bumps x264 and x265 encoders to the latest stable version `x264-snapshot-20240314-3186` and `x265_3.6` respectively
+
+See the list of patches here: https://github.com/vincejv/docker-handbrake/tree/ubuntu/src/handbrake
+Available for Windows, Linux and Mac (still working on unifying the release page for platforms)
+
+---
 
 This project implements a Docker container for [HandBrake](https://handbrake.fr).
 
@@ -33,7 +46,6 @@ of modern, widely supported codecs.
       * [Ports](#ports)
       * [Changing Parameters of a Running Container](#changing-parameters-of-a-running-container)
    * [Docker Compose File](#docker-compose-file)
-   * [Docker Image Versioning](#docker-image-versioning)
    * [Docker Image Update](#docker-image-update)
       * [Synology](#synology)
       * [unRAID](#unraid)
@@ -75,7 +87,38 @@ docker run -d \
     -v /home/user:/storage:ro \
     -v /home/user/HandBrake/watch:/watch:rw \
     -v /home/user/HandBrake/output:/output:rw \
-    jlesage/handbrake
+    ghcr.io/vincejv/handbrake:<platform>-ubuntu
+```
+Architecture/Platform guide:
+```
+Generic
+x86-64    : Processors lacking SSE4.2 and newer features
+x86-64-v2 : Processors with features up to and including SSE4.2
+x86-64-v3 : Processors with features up to and including AVX AND AVX2
+x86-64-v4 : Processors with features up to and including AVX512
+
+AMD
+Generation                   Archit.  Generic Build / Recommended build
+Ryzen 1000                   AVX2     x86-64-v3 / znver1
+Ryzen 2000                   AVX2     x86-64-v3 / znver1
+Ryzen 3000                   AVX2     x86-64-v3 / znver2
+Ryzen 4000                   AVX2     x86-64-v3 / znver2
+Ryzen 5000                   AVX2     x86-64-v3 / znver3
+Ryzen 7000                   AVX-512  x86-64-v4 / znver4
+
+INTEL
+Generation                  Archit.  Generic Build / Recommended build
+Sandybridge (2000-series)   AVX      x86-64-v2 / sandybridge
+Ivybridge   (3000-series)   AVX      x86-64-v2 / ivybridge
+Haswell     (4000-series)   AVX2     x86-64-v3 / haswell
+Broadwell   (5000-series)   AVX2     x86-64-v3 / broadwell
+Skylake     (6000-series)   AVX2     x86-64-v3 / skylake
+Kaby Lake   (7000-series)   AVX2     x86-64-v3 / skylake
+Coffee Lake (8/9000-series) AVX2     x86-64-v3 / skylake
+Comet Lake  (10000-series)  AVX2     x86-64-v3 / skylake
+Rocket Lake (11000-series)  AVX-512  x86-64-v4 / rocketlake
+Alder Lake  (12000-series)  AVX2     x86-64-v3 / alderlake
+Raptor Lake (13000-series)  AVX2     x86-64-v3 / raptorlake
 ```
 
 Where:
@@ -96,7 +139,7 @@ docker run [-d] \
     [-e <VARIABLE_NAME>=<VALUE>]... \
     [-v <HOST_DIR>:<CONTAINER_DIR>[:PERMISSIONS]]... \
     [-p <HOST_PORT>:<CONTAINER_PORT>]... \
-    jlesage/handbrake
+    ghcr.io/vincejv/handbrake:<platform>-ubuntu
 ```
 
 | Parameter | Description |
@@ -267,7 +310,7 @@ ports are part of the example.
 version: '3'
 services:
   handbrake:
-    image: jlesage/handbrake
+    image: ghcr.io/vincejv/handbrake:<platform>-ubuntu
     ports:
       - "5800:5800"
     volumes:
@@ -276,19 +319,6 @@ services:
       - "/home/user/HandBrake/watch:/watch:rw"
       - "/home/user/HandBrake/output:/output:rw"
 ```
-
-## Docker Image Versioning
-
-Each release of a Docker image is versioned.  Prior to october 2022, the
-[semantic versioning](https://semver.org) was used as the versioning scheme.
-
-Since then, versioning scheme changed to
-[calendar versioning](https://calver.org).  The format used is `YY.MM.SEQUENCE`,
-where:
-  - `YY` is the zero-padded year (relative to year 2000).
-  - `MM` is the zero-padded month.
-  - `SEQUENCE` is the incremental release number within the month (first release
-    is 1, second is 2, etc).
 
 ## Docker Image Update
 
@@ -308,7 +338,7 @@ Finally, the Docker image can be manually updated with these steps:
 
   1. Fetch the latest image:
 ```shell
-docker pull jlesage/handbrake
+docker pull ghcr.io/vincejv/handbrake:<platform>-ubuntu
 ```
 
   2. Stop the container:
@@ -333,7 +363,7 @@ container image.
 
   1.  Open the *Docker* application.
   2.  Click on *Registry* in the left pane.
-  3.  In the search bar, type the name of the container (`jlesage/handbrake`).
+  3.  In the search bar, type the name of the container (`ghcr.io/vincejv/handbrake:<platform>-ubuntu`).
   4.  Select the image, click *Download* and then choose the `latest` tag.
   5.  Wait for the download to complete.  A  notification will appear once done.
   6.  Click on *Container* in the left pane.
@@ -817,34 +847,8 @@ With older versions, the following lines might need to be added to
 modprobe i915
 ```
 
-## Nightly Builds
-
-Nightly builds are based on the latest HandBrake development code.
-This means that they may have bugs, crashes and instabilities.
-
-Nightly builds are available through Docker image tags.  These tags have the
-following format:
-```
-nightly-<COMMIT_DATE>-<COMMIT_HASH>
-```
-
-Where:
-  - `COMMIT_DATE` is the date (in `YYMMDDHHMMSS` format) of the latest commit
-    from the HandBrake [Git repository].
-  - `COMMIT_HASH` is the short hash of the latest commit from the HandBrake
-    [Git repository].
-
-The latest nightly build is available through the `nightly-latest` Docker image
-tag.  The list of available tags are available on [Docker Hub].
-
-To use a Docker image tag, it has to be appended to the name of the Docker image
-during the creation of the container.  Here is an example:
-```
-docker run [OPTIONS..] jlesage/handbrake:nightly-latest
-```
-
 [Git repository]: https://github.com/HandBrake/HandBrake
-[Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
+[Docker Hub]: https://hub.docker.com/r/vincejv/handbrake/tags/
 
 ## Debug Builds
 
@@ -882,16 +886,7 @@ this core dump is properly generated, two things are required:
      **NOTE**: The current value of the pattern can be obtained by executing
      `cat /proc/sys/kernel/core_pattern`.
 
-Debug builds are available by using Docker image tags with the `debug` suffix.
-Make sure to look at available [tags on Docker Hub].
-
-When creating the container, the tag needs to be appended to the name of the
-Docker image, like this:
-```
-docker run [OPTIONS..] jlesage/handbrake:v1.14.3-debug
-```
-
-[tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
+[tags on Docker Hub]: https://hub.docker.com/r/vincejv/handbrake/tags/
 
 ### unRAID
 
@@ -905,4 +900,4 @@ Having troubles with the container or have questions?  Please
 
 For other great Dockerized applications, see https://jlesage.github.io/docker-apps.
 
-[create a new issue]: https://github.com/jlesage/docker-handbrake/issues
+[create a new issue]: https://github.com/vincejv/docker-handbrake/issues
