@@ -44,7 +44,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             # set latest tag for default branch
-            type=raw,value=${{ matrix.march }}-ubuntu
+            type=raw,value=${{ matrix.march }}-hb180
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
@@ -74,7 +74,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: | 
-            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu
-            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-${{ steps.commit.outputs.short }}
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-ubuntu-${{ steps.commit.outputs.short }}
+            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-hb180
+            ${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-hb180-${{ steps.commit.outputs.short }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-hb180
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ matrix.march }}-hb180-${{ steps.commit.outputs.short }}

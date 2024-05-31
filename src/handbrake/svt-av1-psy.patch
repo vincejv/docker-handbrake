@@ -1,0 +1,134 @@
+From 9ccc973e68e8601e0aebc8aed4a9e20183ed9a84 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Sat, 1 Jun 2024 00:29:31 +0800
+Subject: [PATCH 1/2] Use SVT-AV1-PSY as av1 encoder instead of mainline
+
+---
+ contrib/svt-av1/module.defs  |  9 ++++-----
+ libhb/common.c               |  4 ++--
+ libhb/encsvtav1.c            | 20 +++++++++++++++++++-
+ libhb/handbrake/av1_common.h |  5 +++--
+ 4 files changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/contrib/svt-av1/module.defs b/contrib/svt-av1/module.defs
+index 4bc8fde74..77a5d07bc 100644
+--- a/contrib/svt-av1/module.defs
++++ b/contrib/svt-av1/module.defs
+@@ -1,9 +1,8 @@
+ $(eval $(call import.MODULE.defs,SVT-AV1,svt-av1))
+ $(eval $(call import.CONTRIB.defs,SVT-AV1))
+ 
+-SVT-AV1.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs/SVT-AV1-v2.1.0.tar.gz
+-SVT-AV1.FETCH.url    += https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v2.1.0/SVT-AV1-v2.1.0.tar.gz
+-SVT-AV1.FETCH.sha256  = 72a076807544f3b269518ab11656f77358284da7782cece497781ab64ed4cb8a
++SVT-AV1.FETCH.url     = https://github.com/vincejv/docker-handbrake/releases/download/contribs/svt-av1-psy-2.1.0-70e5a3d.tar.gz
++SVT-AV1.FETCH.sha256  = 531a54cb1154e21abde71e67185339debdb6fbdccf3ce63f586ae013c713ade1
+ 
+ SVT-AV1.GCC.args.c_std =
+ 
+@@ -13,9 +12,9 @@ SVT-AV1.CONFIGURE.args.prefix = -DCMAKE_INSTALL_PREFIX="$(SVT-AV1.CONFIGURE.pref
+ SVT-AV1.CONFIGURE.deps        =
+ SVT-AV1.CONFIGURE.static      =
+ SVT-AV1.CONFIGURE.shared      = -DBUILD_SHARED_LIBS=OFF
+-SVT-AV1.CONFIGURE.extra       = -DBUILD_DEC=OFF -DBUILD_APPS=OFF -DREPRODUCIBLE_BUILDS=ON
++SVT-AV1.CONFIGURE.extra       = -DBUILD_DEC=OFF -DBUILD_APPS=OFF -DREPRODUCIBLE_BUILDS=OFF
+ SVT-AV1.CONFIGURE.extra      += -DCMAKE_INSTALL_LIBDIR=lib
+-SVT-AV1.CONFIGURE.extra      += -DENABLE_AVX512=ON
++SVT-AV1.CONFIGURE.extra      += -DENABLE_AVX512=ON
+ 
+ ifeq ($(GCC.O),$(filter $(GCC.O),size size-aggressive))
+     SVT-AV1.CONFIGURE.extra += -DCMAKE_BUILD_TYPE=MinSizeRel -DMINIMAL_BUILD=ON
+diff --git a/libhb/common.c b/libhb/common.c
+index ec39a1a95..483aa196a 100644
+--- a/libhb/common.c
++++ b/libhb/common.c
+@@ -1525,9 +1525,9 @@ void hb_video_quality_get_limits(uint32_t codec, float *low, float *high,
+         case HB_VCODEC_SVT_AV1:
+         case HB_VCODEC_SVT_AV1_10BIT:
+             *direction   = 1;
+-            *granularity = 1.;
++            *granularity = 0.1;
+             *low         = 0.;
+-            *high        = 63.;
++            *high        = 70.;
+             break;
+ 
+         case HB_VCODEC_VT_H264:
+diff --git a/libhb/encsvtav1.c b/libhb/encsvtav1.c
+index 8d317c574..9f429d1a7 100644
+--- a/libhb/encsvtav1.c
++++ b/libhb/encsvtav1.c
+@@ -25,6 +25,7 @@ int  encsvtWork(hb_work_object_t *, hb_buffer_t **, hb_buffer_t **);
+ void encsvtClose(hb_work_object_t *);
+ 
+ #define FRAME_INFO_SIZE 2048
++#define MAX_QP_VALUE 63
+ #define FRAME_INFO_MASK (FRAME_INFO_SIZE - 1)
+ 
+ hb_work_object_t hb_encsvtav1 =
+@@ -89,6 +90,19 @@ static int alloc_buffer(EbSvtAv1EncConfiguration *config, hb_work_private_t *pv)
+     return 0;
+ }
+ 
++void set_extended_crf(EbSvtAv1EncConfiguration *param, double vquality) {
++    if (vquality <= MAX_QP_VALUE) // for crf <= 63
++    {
++        int decimalPart                   = (vquality - (int)vquality) * 100; // Get the decimal part
++        param->qp                         = vquality; // truncated automatically
++        param->extended_crf_qindex_offset = decimalPart / 25;
++    } else // extended crf
++    {
++        param->qp                         = MAX_QP_VALUE;
++        param->extended_crf_qindex_offset = (vquality - MAX_QP_VALUE) * 4;
++    }
++}
++
+ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+ {
+     hb_work_private_t *pv = calloc(1, sizeof(hb_work_private_t));
+@@ -124,7 +138,7 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+     }
+     else
+     {
+-        param->qp                = job->vquality;
++        set_extended_crf(param, job->vquality);
+         param->rate_control_mode = SVT_AV1_RC_MODE_CQP_OR_CRF;
+         param->force_key_frames = 1;
+     }
+@@ -192,6 +206,10 @@ int encsvtInit(hb_work_object_t *w, hb_job_t *job)
+     {
+         param->tune = 1;
+     }
++    else if (job->encoder_tune != NULL && strstr("subjective ssim", job->encoder_tune) != NULL)
++    {
++        param->tune = 3;
++    }
+     else
+     {
+         param->tune = 0;
+diff --git a/libhb/handbrake/av1_common.h b/libhb/handbrake/av1_common.h
+index 79d19c1f0..68c167576 100644
+--- a/libhb/handbrake/av1_common.h
++++ b/libhb/handbrake/av1_common.h
+@@ -22,7 +22,8 @@ static const char * const hb_av1_level_names[] = {
+ 
+ static const int          hb_av1_level_values[] = {
+      -1,  20,  21,  22,  23,  30,  31,  32,  33,  40,  41,  42,
+-     43,  50,  51,  52,  53,  60,  61,  62,  63,  0 };
++     43,  50,  51,  52,  53,  60,  61,  62,  63,  64,  65,  66,
++     67,  68,  69,  70,  0 };
+ 
+ static const char * const av1_svt_preset_names[] =
+ {
+@@ -31,7 +32,7 @@ static const char * const av1_svt_preset_names[] =
+ 
+ static const char * const av1_svt_tune_names[] =
+ {
+-    "psnr", "ssim", "fastdecode", NULL
++    "psnr", "ssim", "subjective ssim", "fastdecode", NULL
+ };
+ 
+ static const char * const av1_svt_profile_names[] =
+-- 
+2.34.1
+

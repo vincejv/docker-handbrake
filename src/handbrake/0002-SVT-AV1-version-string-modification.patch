@@ -1,0 +1,44 @@
+From 4c8a49730e7c1e05d204e1021109aae0e706609b Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Fri, 31 May 2024 20:17:06 +0800
+Subject: [PATCH 2/2] SVT-AV1 version string modification
+
+---
+ contrib/svt-av1/A01-Version-string.patch | 25 ++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 contrib/svt-av1/A01-Version-string.patch
+
+diff --git a/contrib/svt-av1/A01-Version-string.patch b/contrib/svt-av1/A01-Version-string.patch
+new file mode 100644
+index 000000000..62f98b32a
+--- /dev/null
++++ b/contrib/svt-av1/A01-Version-string.patch
+@@ -0,0 +1,25 @@
++From 53c934eea7f27b811c99eb9e9d3a8ff8cb3b561e Mon Sep 17 00:00:00 2001
++From: Vince JV <1276544+vincejv@users.noreply.github.com>
++Date: Fri, 31 May 2024 19:36:46 +0800
++Subject: [PATCH] Version string patch
++
++---
++ CMakeLists.txt | 2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++diff --git a/CMakeLists.txt b/CMakeLists.txt
++index 8d740b9..1c0a528 100644
++--- a/CMakeLists.txt
+++++ b/CMakeLists.txt
++@@ -19,7 +19,7 @@ endif()
++ project(svt-av1 VERSION 2.1.0
++     LANGUAGES C CXX)
++ 
++-set(VERSION_TAG "rc2")
+++set(VERSION_TAG "-70e5a3d")
++ 
++ if(POLICY CMP0063)
++   cmake_policy(SET CMP0063 NEW)
++-- 
++2.34.1
++
+-- 
+2.34.1
+

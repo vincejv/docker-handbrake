@@ -1,4 +1,8 @@
 #!/bin/sh
+
+export GTK_A11Y=none
+export LIBGL_ALWAYS_SOFTWARE=true
+
 COMMON_ARGS="--config /config"
 
 cd /storage

@@ -8,13 +8,13 @@
 ARG DOCKER_IMAGE_VERSION=
 
 # Define software versions.
-ARG HANDBRAKE_VERSION=1.7.3
-ARG LIBVA_VERSION=2.20.0
+ARG HANDBRAKE_VERSION=1.8.0
+ARG LIBVA_VERSION=2.21.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
-ARG GMMLIB_VERSION=22.3.12
-ARG INTEL_MEDIA_DRIVER_VERSION=23.3.5
+ARG GMMLIB_VERSION=22.3.19
+ARG INTEL_MEDIA_DRIVER_VERSION=24.1.5
 ARG INTEL_MEDIA_SDK_VERSION=23.2.2
-ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=23.3.4
+ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=24.1.5
 ARG CPU_FEATURES_VERSION=0.9.0
 
 # Define software download URLs.
@@ -93,7 +93,11 @@ RUN \
 # Install dependencies.
 RUN \
     add-pkg \
-        libgtk-3-0 \
+        libgtk-4-1 \
+        mesa-vulkan-drivers \
+        mesa-utils \
+        mesa-utils-extra \
+        libgl1-mesa-dri \
         libgudev-1.0-0 \
         libdbus-glib-1-dev \
         libnotify-dev \

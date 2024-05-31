@@ -213,7 +213,7 @@ apt-get install -y \
 
 # gtk
 apt-get install -y \
-    libgtk-3-dev \
+    libgtk-4-dev \
     libdbus-glib-1-dev \
     libnotify-dev \
     libgudev-1.0-dev \
@@ -298,7 +298,7 @@ fi
 #
 # Set compiler optimization on build
 #
-export CFLAGS="$CFLAGS -march=$MARCH -fno-stack-protector -U_FORTIFY_SOURCE"
+export CFLAGS="$CFLAGS -march=$MARCH -fno-stack-protector -U_FORTIFY_SOURCE -flto"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
@@ -402,6 +402,7 @@ fi
 
 log "Patching Intel Media SDK..."
 patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-debug-no-assert.patch
+patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-compile-fix.patch
 
 log "Configuring Intel Media SDK..."
 (
@@ -456,28 +457,9 @@ log "Patching HandBrake..."
 # if xx-info is-cross; then
 #     patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
 # fi
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/av1_svt180_upgrade.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/enable-svt-av1-avx512.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/opus_upgrade.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/language.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/x264_x265_upgrade.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-subjective-ssim-in-gui-presets.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Allow-the-use-of-extended-CRF.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Fix-CRF-greater-63.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mapping_family-option-to-1-.patch
-# Dolby vision patches -- START
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-libhb-refactor-Dolby-Vision-level-selection-code-def.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-SVT-AV1-hb-mainline-sync.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0002-libhb-convert-dolby-vision-rpus-to-t35-obu-payloads-.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0003-contrib-fix-a-crash-that-happens-when-multiple-metad.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0005-scan-always-use-UNDEF-for-Dolby-Vision-5-and-10.0-un.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0006-Fix-merge-errors.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0007-h265-Dovi-compile-error.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0008-libhb-refactor-how-extradata-is-stored-use-a-dynamic.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0009-Dovi-compile-fix-2.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0010-libdovi-bump-to-3.3.0.patch
-# Dolby vision patches -- END
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/maximized-window.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/svt-av1-psy.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0002-SVT-AV1-version-string-modification.patch
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 
