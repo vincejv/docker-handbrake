@@ -498,6 +498,7 @@ log "Configuring HandBrake..."
         --enable-x265 \
         --enable-libdovi \
         --no-harden \
+        --lto=on \
         $CONF_FLAGS \
 )
 
