@@ -2,9 +2,9 @@ name: Build and push to Docker Hub
 
 on:
   push:
-    branches: [ "ubuntu" ]
+    branches: [ "ubuntu-hb180" ]
   pull_request:
-    branches: [ "ubuntu" ]
+    branches: [ "ubuntu-hb180" ]
 
 env:
   REGISTRY_IMAGE: vincejv/handbrake
