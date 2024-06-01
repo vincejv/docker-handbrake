@@ -298,7 +298,7 @@ fi
 #
 # Set compiler optimization on build
 #
-export CFLAGS="$CFLAGS -march=$MARCH -fno-stack-protector -U_FORTIFY_SOURCE"
+export CFLAGS="$CFLAGS -march=$MARCH -fno-stack-protector -U_FORTIFY_SOURCE -flto"
 export CXXFLAGS="$CFLAGS"
 export CPPFLAGS="$CFLAGS"
 
@@ -402,6 +402,7 @@ fi
 
 log "Patching Intel Media SDK..."
 patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-debug-no-assert.patch
+patch -d /tmp/MediaSDK -p1 < "$SCRIPT_DIR"/intel-media-sdk-compile-fix.patch
 
 log "Configuring Intel Media SDK..."
 (
@@ -469,7 +470,6 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-encavcodecaudio-set-opus-mappin
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-libhb-refactor-Dolby-Vision-level-selection-code-def.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0001-SVT-AV1-hb-mainline-sync.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0002-libhb-convert-dolby-vision-rpus-to-t35-obu-payloads-.patch
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0003-contrib-fix-a-crash-that-happens-when-multiple-metad.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0005-scan-always-use-UNDEF-for-Dolby-Vision-5-and-10.0-un.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0006-Fix-merge-errors.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0007-h265-Dovi-compile-error.patch
@@ -480,6 +480,7 @@ patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/dolby/0010-libdovi-bump-to-3.3.0.pat
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Bump-svt-av1-psy-version-string.patch
 sed -i "0,/Git-Commit-Hash/s//${HB_BUILD}/" "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
 patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-Add-versioning-through-activity-window.patch
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/0001-SVT-AV1-2.1.0-preset-adjustment.patch
 
 # Create the meson cross compile config file.
 # if xx-info is-cross; then
@@ -516,6 +517,7 @@ log "Configuring HandBrake..."
         --enable-x265 \
         --enable-libdovi \
         --no-harden \
+        --lto=on \
         $CONF_FLAGS \
 )
 

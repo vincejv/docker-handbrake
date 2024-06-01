@@ -1,0 +1,114 @@
+From a78c2bca2614e6c4f222526e2a870ea631f4f233 Mon Sep 17 00:00:00 2001
+From: Vince JV <1276544+vincejv@users.noreply.github.com>
+Date: Sat, 1 Jun 2024 12:02:22 +0800
+Subject: [PATCH] SVT-AV1 2.1.0 preset adjustment
+
+---
+ libhb/common.c                   |  4 ++--
+ libhb/handbrake/av1_common.h     |  2 +-
+ libhb/handbrake/preset_builtin.h |  2 +-
+ libhb/preset.c                   | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/libhb/common.c b/libhb/common.c
+index ece86cbc7..c2ef89b0f 100644
+--- a/libhb/common.c
++++ b/libhb/common.c
+@@ -270,8 +270,8 @@ hb_encoder_internal_t hb_video_encoders[]  =
+     { { "MPEG-2 (FFmpeg)",             "ffmpeg2",          NULL,                             HB_VCODEC_FFMPEG_MPEG2,      HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 1, 0, HB_GID_VCODEC_MPEG2,  },
+     { { "VP3 (Theora)",                "libtheora",        NULL,                             HB_VCODEC_THEORA,                            HB_MUX_MASK_MKV, }, NULL, 1, 0, HB_GID_VCODEC_THEORA, },
+     // actual encoders
+-    { { "AV1 (SVT)",                   "svt_av1",          "AV1 (SVT)",                      HB_VCODEC_SVT_AV1,           HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_SVT,    },
+-    { { "AV1 10-bit (SVT)",            "svt_av1_10bit",    "AV1 10-bit (SVT)",               HB_VCODEC_SVT_AV1_10BIT,     HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_SVT,    },
++    { { "AV1 (SVT Psy)",               "svt_av1",          "AV1 (SVT)",                      HB_VCODEC_SVT_AV1,           HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_SVT,    },
++    { { "AV1 10-bit (SVT Psy)",        "svt_av1_10bit",    "AV1 10-bit (SVT)",               HB_VCODEC_SVT_AV1_10BIT,     HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_SVT,    },
+     { { "AV1 (Intel QSV)",             "qsv_av1",          "AV1 (Intel Media SDK)",          HB_VCODEC_QSV_AV1,           HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_QSV,    },
+     { { "AV1 10-bit (Intel QSV)",      "qsv_av1_10bit",    "AV1 10-bit (Intel Media SDK)",   HB_VCODEC_QSV_AV1_10BIT,     HB_MUX_MASK_MP4|HB_MUX_MASK_WEBM|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_QSV,    },
+     { { "AV1 (NVEnc)",                 "nvenc_av1",        "AV1 (NVEnc)",                    HB_VCODEC_FFMPEG_NVENC_AV1,                   HB_MUX_MASK_MP4|HB_MUX_MASK_MKV, }, NULL, 0, 1, HB_GID_VCODEC_AV1_NVENC,  },
+diff --git a/libhb/handbrake/av1_common.h b/libhb/handbrake/av1_common.h
+index c003f859f..88aca2d35 100644
+--- a/libhb/handbrake/av1_common.h
++++ b/libhb/handbrake/av1_common.h
+@@ -27,7 +27,7 @@ static const int          hb_av1_level_values[] = {
+ 
+ static const char * const av1_svt_preset_names[] =
+ {
+-    "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0", "-1", NULL
++    "13", "12", "11", "10", "9", "8", "7", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3", NULL
+ };
+ 
+ static const char * const av1_svt_tune_names[] =
+diff --git a/libhb/handbrake/preset_builtin.h b/libhb/handbrake/preset_builtin.h
+index 491d73b8c..ff3fa2bb2 100644
+--- a/libhb/handbrake/preset_builtin.h
++++ b/libhb/handbrake/preset_builtin.h
+@@ -2109,7 +2109,7 @@ const char hb_builtin_presets_json[] =
+ "                    \"VideoLevel\": \"auto\",\n"
+ "                    \"VideoMultiPass\": true,\n"
+ "                    \"VideoOptionExtra\": \"\",\n"
+-"                    \"VideoPreset\": \"6\",\n"
++"                    \"VideoPreset\": \"5\",\n"
+ "                    \"VideoProfile\": \"main\",\n"
+ "                    \"VideoQSVDecode\": false,\n"
+ "                    \"VideoQualitySlider\": 20.0,\n"
+diff --git a/libhb/preset.c b/libhb/preset.c
+index 865c8ba66..08674c294 100644
+--- a/libhb/preset.c
++++ b/libhb/preset.c
+@@ -2797,6 +2797,27 @@ static void und_to_any(hb_value_array_t * list)
+     }
+ }
+ 
++static void import_av1_preset_settings_55_0_0(hb_value_t *preset)
++{
++    const char *enc = hb_dict_get_string(preset, "VideoEncoder");
++    int codec = hb_video_encoder_get_from_name(enc);
++
++    if (codec == HB_VCODEC_SVT_AV1 || codec == HB_VCODEC_SVT_AV1_10BIT)
++    {
++        const char *pst = hb_dict_get_string(preset, "VideoPreset");
++        int video_preset = pst ? atoi(pst) : 0;
++
++        if (video_preset == 6)
++        {
++            hb_dict_set_string(preset, "VideoPreset", "7");
++        }
++        else if (video_preset == 12)
++        {
++            hb_dict_set_string(preset, "VideoPreset", "13");
++        }
++    }
++}
++
+ static void import_container_settings_51_0_0(hb_value_t *preset)
+ {
+     int optimize = hb_dict_get_bool(preset, "Mp4HttpOptimize");
+@@ -3515,11 +3536,15 @@ static void import_51_0_0(hb_value_t *preset)
+ static void import_50_0_0(hb_value_t *preset)
+ {
+     import_video_pass_settings_50_0_0(preset);
++
++    import_51_0_0(preset);
+ }
+ 
+ static void import_47_0_0(hb_value_t *preset)
+ {
+     import_pic_settings_47_0_0(preset);
++
++    import_50_0_0(preset);
+ }
+ 
+ static void import_44_0_0(hb_value_t *preset)
+@@ -3685,6 +3710,9 @@ static int preset_import(hb_value_t *preset, int major, int minor, int micro)
+             import_51_0_0(preset);
+             result = 1;
+         }
++        
++        // SVT-AV1 Preset shuffle
++        import_av1_preset_settings_55_0_0(preset);
+ 
+         preset_clean(preset, hb_preset_template);
+     }
+-- 
+2.34.1
+
