@@ -5,12 +5,16 @@
 [![Docker Stars](https://img.shields.io/docker/stars/vincejv/handbrake?label=Stars&logo=docker&style=for-the-badge)](https://hub.docker.com/r/vincejv/handbrake)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/vincejv/docker-handbrake/build-image.yml?logo=github&branch=master&style=for-the-badge)](https://github.com/vincejv/docker-handbrake/actions/workflows/build-ubuntu.yml)
 
+[![HandBrake logo](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png&w=110)](https://handbrake.fr)[![HandBrake](https://images.placeholders.dev/?width=288&height=110&fontFamily=monospace&fontWeight=400&fontSize=52&text=HandBrake&bgColor=rgba(0,0,0,0.0)&textColor=rgba(121,121,121,1))](https://handbrake.fr)
+
 ---
 This is a fork of the original Handbrake docker container, the following patches are applied
+- Disable compile time hardening
+- Enable LTO across encoders and filters
 - Upgrade libopus to v1.5.2
 - Backport opus [mapping family patch](https://github.com/HandBrake/HandBrake/commit/8a0847806d558b252daceb5610d2ba61f7e9ba5a)
 - Backport [DoVi Passthrough](https://github.com/HandBrake/HandBrake/commit/770b00118cc77d73d65f4ceb1e1b06b9ae8b4d1a) for AV1 transcodes, [limitations](https://handbrake.fr/docs/en/latest/technical/hdr.html)
-- Replace SVT-AV1 with [PSY fork](https://github.com/gianni-rosato/svt-av1-psy) all [b]API[/b] features implemented including extended, subjective SSIM and fractional CRF
+- Replace SVT-AV1 with [PSY fork](https://github.com/gianni-rosato/svt-av1-psy) all *API* features implemented including extended, subjective SSIM and fractional CRF
 - [Missing languages](https://github.com/HandBrake/HandBrake/pull/5978) during subtitles/audio passthrough
 - Bumps x264 and x265 encoders to the latest stable version `x264-snapshot-20240314-3186` and `x265_3.6` respectively
 
