@@ -71,7 +71,7 @@ index 865c8ba66..08674c294 100644
 +
 +        if (video_preset == 6)
 +        {
-+            hb_dict_set_string(preset, "VideoPreset", "7");
++            hb_dict_set_string(preset, "VideoPreset", "5");
 +        }
 +        else if (video_preset == 12)
 +        {
