@@ -32,7 +32,7 @@ index 000000000..62f98b32a
 +     LANGUAGES C CXX)
 + 
 +-set(VERSION_TAG "rc2")
-++set(VERSION_TAG "-4e40c3b")
+++set(VERSION_TAG "-A-37a5609")
 + 
 + if(POLICY CMP0063)
 +   cmake_policy(SET CMP0063 NEW)
